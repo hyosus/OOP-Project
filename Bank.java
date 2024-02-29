@@ -15,13 +15,6 @@ public class Bank {
     // Processes bank-wide transactions.
     public void processTransactions() {
         System.out.println("Processing transactions in " + name + " bank.");
-
-        // Example: Update balances for all accounts
-        for (Account account : accounts) {
-            double interestRate = 0.02; // Example interest rate
-            double balance = account.getBalance();
-            double interest = balance * interestRate;
-            account.deposit(interest); // Add interest to the account balance
         }
     }
 
