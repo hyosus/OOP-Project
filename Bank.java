@@ -1,6 +1,7 @@
 public class Bank {
     private String name;
     private List<Account> accounts;
+    private int numAccounts;
 
     public Bank(String name) {
         this.name = name;
@@ -9,11 +10,13 @@ public class Bank {
 
     // Adds an account to the bank.
     public void addAccount(Account account) {
+
         accounts.add(account);
     }
 
     // Processes bank-wide transactions.
     public void processTransactions() {
+
         System.out.println("Processing transactions in " + name + " bank.");
         }
     }
@@ -28,7 +31,8 @@ public class Bank {
 
     // Gets the name of the bank.
     public String getName() {
-        return name;
+
+    return name;
     }
 
     public static void main(String[] args) {
