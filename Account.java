@@ -17,9 +17,11 @@ public class Account {
     }
 
     public void setTransferLimit(){
+       this.transferLimit = transferLimit;
 
     }
     public void setOverseasWithdrawLimit(){
+       this.overseasWithdrawLimit = overseasWithdrawLimit;
 
     }
     public void deposit(double amount){
