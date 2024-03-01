@@ -1,3 +1,202 @@
-public class Loan {
+import java.util.Date;
+
+/**
+ * Loan class for Banking System
+ * <p>
+ * Each loan has an ID, a principal amount, a balance, an interest rate, a term, start date and a account number tied to the loan.
+ */
+public class Loan{
+
+    /**
+     * The ID of the loan.
+     */
+    private int loanID;
+
+    /**
+     * The principal amount of the loan for calculation purposes.
+     */
+    private double loanAmount;
+
+    /**
+     * The original principal amount of the loan for display purposes.
+     */
+    private double loanPaymentAdjusted;
+
+    /**
+     * The remaining balance of the loan.
+     */
+    private double remainingDebt;
+
+    /**
+     * The annual interest rate of the loan, represented as a decimal (e.g., 0.05 for 5%).
+     */
+    private double interestRate;
+
+    /**
+     * The term of the loan in months.
+     */
+    private int loanTerm;
+
+    /**
+     * The date the loan was started.
+     */
+    private Date startDate;
+
+    /**
+     * Constructs a new Loan with the specified account number, ID, amount, term and interest rate.
+     * <p>
+     * The start date is set to the current date and time.
+     * The remaining debt and adjusted loan amount are both set to the initial loan amount.
+     *
+     * @param account the account tied to the new loan
+     * @param loanID the ID of the new loan
+     * @param loanTerm the term of the new loan in months (e.g., 12 for 1 year)
+     * @param loanAmount the principal amount of the new loan
+     * @param interestRate the interest rate of the new loan
+     */
+    public Loan(Account account, int loanID, int loanTerm, double loanAmount, double interestRate){
+        this.account = account;
+        this.loanID = loanID;
+        this.loanAmount = loanAmount; 
+        this.loanPaymentAdjusted = loanAmount; // Used for caluculating the monthly payment
+        this.remainingDebt = loanAmount;
+        this.interestRate = interestRate;
+        this.startDate = new Date();
+        this.loanTerm = loanTerm;
+    }
+
+    /**
+     * Get the information of the loan including the loan ID, loan amount, interest rate, remaining loan, and monthly payment.
+     */
+    public void getLoanInfo(){
+        System.out.println("Loan Information");
+        System.out.println("Account Number: " + account.getAccountNumber());
+        System.out.println("Loan ID: " + loanID);
+        System.out.println("Loaned Amount: " + loanAmount);
+        System.out.println("Interest Rate: " + interestRate + "%");
+        System.out.println("Remaining Loan: " + remainingDebt);
+        System.out.println("Minimum Monthly Payment: " + this.calculateMonthlyPayment());
+    }
+
+    /**
+    * Gets the ID of this loan.
+    *
+    * @return The ID of this loan.
+    */
+    public int getLoanID(){
+        return this.loanID;
+    }
+
+    /**
+     * Gets the original principal amount of this loan.
+     * @param loanID
+     * @return The original principal amount of this loan.
+     */
+    public double getLoanAmount(int loanID){
+        return this.loanAmount;
+    }
+
+    /**
+     * Sets the principal amount of this loan.
+     * @param amount
+     */
+    public void setLoanAmount(double amount){
+        this.loanAmount = amount;
+    }
+
+    /**
+     * Gets the interest rate of this loan.
+     * @return The interest rate of this loan.
+     */
+    public double getInterestRate(){
+        return this.interestRate;
+    }
+
+    /**
+     * Sets the interest rate of this loan. (e.g. 5 = 5% interest rate)
+     * @param rate
+     */
+    public void setInterestRate(double rate){
+        this.interestRate = rate;
+    }
+
+    /**
+     * Gets the remaining debt of this loan.
+     * @return The remaining debt of this loan.
+     */
+    public double getRemainingDebt(){
+        return this.remainingDebt;
+    }
+
+    /**
+     * Gets the start date of this loan.
+     * @return The start date of this loan.
+     */
+    public Date getStartDate(){
+        return this.startDate;
+    }
+
+    /**
+     * Gets the term of this loan. (in months)
+     * @return
+     */
+    public int getLoanTerm(){
+        return this.loanTerm;
+    }
+
+    /**
+     * Sets the term of this loan. (in months)
+     * @param term
+     */
+    public void setLoanTerm(int term){
+        this.loanTerm = term;
+    }
+
+    /**
+     * Makes a payment on this loan.
+     * <p>
+     * If the payment is less than the monthly payment, the method will print an error message and return.
+     * If the payment is greater than the remaining debt, the method will print an error message and return.
+     * Otherwise, the method will subtract the payment from the remaining debt and return.
+     *
+     * @param payment The amount to be paid on this loan.
+     */
+    public void loanPayment(double payment){
+        if (payment < this.calculateMonthlyPayment()){
+            System.out.println("Payment is less than the monthly payment required. Please try again.");
+            System.out.println("Minimum Payment: " + this.calculateMonthlyPayment());
+            return;
+        }
+        else if (payment > this.remainingDebt){
+            System.out.println("Payment exceeds remaining loan amount, Please try again.");
+            System.out.println("Remaining Debt: " + this.remainingDebt);
+            return;
+        }
+        else{
+            System.out.println("Payment Successful");
+            this.loanAmount = payment - this.calculateMonthlyPayment(); // Adjusted when user pays more than the monthly payment
+            this.remainingDebt -= payment;
+            return;
+        }
+        
+    }
+
+    /**
+     * Calculates the monthly payment for this loan.
+     * <p>
+     * The formula used is:
+     * <pre>
+     * (loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -loanTerm))
+     * </pre>
+     * This formula is based on the annuity formula, which calculates the amount that needs to be paid each month to fully repay the loan over the specified term, assuming the interest rate remains constant.
+     *
+     * @return The monthly payment for this loan.
+     */
+    public double calculateMonthlyPayment(){
+
+        double monthlyInterestRate = this.interestRate / 12 / 100;
+        double monthlyPayment = (this.loanPaymentAdjusted * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -this.loanTerm));
+        return monthlyPayment;
+    }
 
 }
