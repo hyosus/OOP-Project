@@ -4,24 +4,24 @@ import java.util.Scanner;
 public class Branch {
     // Attributes
     private String branchId;
+    private boolean isOverseas;
+    private String country;
     private String branchName;
     private String address;
     private int phoneNum;
     private int atmAvailability;
     private ArrayList<Integer> queueNum;
-    private Loan loan;
-    private Insurance insurance;
 
     // Constructor
-    public Branch(String bid, String bname, String address, int hp, int atmAvail, Loan loan, Insurance insurance) {
+    public Branch(String bid, boolean isOverseas, String country, String bname, String address, int hp, int atmAvail) {
         this.branchId = bid;
+        this.isOverseas = isOverseas;
+        this.country = country;
         this.branchName = bname;
         this.address = address;
         this.phoneNum = hp;
         this.atmAvailability = atmAvail;
         this.queueNum = new ArrayList<>();
-        this.loan = loan;
-        this.insurance = insurance;
     }
 
     // Getter Setter
@@ -74,11 +74,6 @@ public class Branch {
     }
 
     public static void main(String[] args) {
-        Branch newBranch = new Branch("123", "DBS", "Clementi", 66671234, 5, null, null);
-        // newBranch.updateBranchDetails();
-        newBranch.generateQueueNumber();
-        newBranch.generateQueueNumber();
-        newBranch.displayQueue();
     }
 
     // Methods
@@ -135,13 +130,31 @@ public class Branch {
         System.out.println("Generated queue number: " + nextQueueNumber);
     }
 
+    public void removeQueue() { // when customer is served, remove their queue number
+        try (Scanner in = new Scanner(System.in)) {
+            String input = in.next();
+
+            int queueToBeRemoved = Integer.parseInt(input);
+
+            if (queueNum.contains(queueToBeRemoved)) {
+                queueNum.remove(queueToBeRemoved);
+            } else {
+                System.out.println("Invalid queue number");
+            }
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public void displayQueue() {
         System.out.println("Current queue: " + queueNum);
         System.out.println("People in line: " + queueNum.size());
     }
 
     public void displayBranchInfo() {
-        System.out.println("Branch ID: " + branchId + "Branch Name: " + branchName + "Address: " + address
-                + "Phone number: " + phoneNum + "ATMs Available: " + atmAvailability);
+        System.out.println(
+                "Branch ID: " + branchId + "Country: " + country + "Branch Name: " + branchName + "Address: " + address
+                        + "Phone number: " + phoneNum + "ATMs Available: " + atmAvailability);
     }
 }
