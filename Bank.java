@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 public class Bank {
     private String name;
     private List<Account> accounts;
@@ -10,7 +13,6 @@ public class Bank {
 
     // Adds an account to the bank.
     public void addAccount(Account account) {
-
         accounts.add(account);
     }
 
@@ -31,11 +33,42 @@ public class Bank {
 
     // Gets the name of the bank.
     public String getName() {
-
-    return name;
+        return name;
     }
 
     public static void main(String[] args) {
-        // main method logic 
+        Bank myBank = new Bank("MyBank");
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Welcome to " + myBank.getName() + " bank!");
+
+        // Prompt user for the type of account
+        System.out.println("Choose account type: 1 - Regular Account, 2 - Savings Account");
+        int accountTypeChoice = scanner.nextInt();
+
+        // Create an account based on user's choice
+        Account newAccount;
+        if (accountTypeChoice == 1) {
+            newAccount = new Account("John Doe", 1000);
+        } else if (accountTypeChoice == 2) {
+            newAccount = new SavingsAccount("Jane Doe", 2000);
+        } else {
+            System.out.println("Invalid choice. Creating a regular account by default.");
+            newAccount = new Account("Default Account", 500);
+        }
+
+        // Add the new account to the bank
+        myBank.addAccount(newAccount);
+
+        // Display initial account information
+        myBank.displayAccounts();
+
+        // Process transactions (e.g., add interest)
+        myBank.processTransactions();
+
+        // Display updated account information
+        myBank.displayAccounts();
+
+        scanner.close();
     }
 }
