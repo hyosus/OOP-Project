@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Scanner;
 public class Bank {
     private String name;
+    private String address;
     private List<Account> accounts;
     private int numAccounts;
 
@@ -13,12 +14,17 @@ public class Bank {
 
     // Adds an account to the bank.
     public void addAccount(Account account) {
+
         accounts.add(account);
     }
 
     // Processes bank-wide transactions.
     public void processTransactions() {
-
+        for (Account account : accounts) {
+            double interestRate = 0.02; // Example interest rate
+            double balance = account.getBalance();
+            double interest = balance * interestRate;
+            account.deposit(interest); // Add interest to the account balance
         System.out.println("Processing transactions in " + name + " bank.");
         }
     }
@@ -37,9 +43,13 @@ public class Bank {
     }
 
     public static void main(String[] args) {
-        Bank myBank = new Bank("MyBank");
-        Scanner scanner = new Scanner(System.in);
 
+        Scanner scanner = new Scanner(System.in);
+        // Prompt user for bank name
+        System.out.println("Enter the name of the bank:");
+        String bankName = scanner.nextLine();
+
+        Bank myBank = new Bank(bankName);
         System.out.println("Welcome to " + myBank.getName() + " bank!");
 
         // Prompt user for the type of account
@@ -51,7 +61,7 @@ public class Bank {
         if (accountTypeChoice == 1) {
             newAccount = new Account("John Doe", 1000);
         } else if (accountTypeChoice == 2) {
-            newAccount = new SavingsAccount("Jane Doe", 2000);
+            newAccount = new Account.SavingsAccount("Jane Doe", 2000);
         } else {
             System.out.println("Invalid choice. Creating a regular account by default.");
             newAccount = new Account("Default Account", 500);
