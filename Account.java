@@ -10,7 +10,7 @@ public class Account {
        this.localWithdrawLimit = 3000;
        this.overseasWithdrawLimit = 3000;
        this.balance = balance;
-       this.accountnumber = accountnumber; 
+       this.accountNumber = accountNumber; 
     }
     public void displayAccountInfo(){
 
