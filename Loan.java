@@ -13,17 +13,17 @@ public class Loan{
     private int loanID;
 
     /**
-     * The principal amount of the loan for calculation purposes.
+     * The principal amount of the loan.
      */
     private double loanAmount;
 
     /**
-     * The original principal amount of the loan for display purposes.
+     * Initially set to loan amount, but adjusted when user pays more than the monthly payment.
      */
     private double loanPaymentAdjusted;
 
     /**
-     * The remaining balance of the loan.
+     * The remaining balance of the loan. Initially set to the loan amount.
      */
     private double remainingDebt;
 
@@ -58,7 +58,7 @@ public class Loan{
         this.account = account;
         this.loanID = loanID;
         this.loanAmount = loanAmount; 
-        this.loanPaymentAdjusted = loanAmount; // Used for caluculating the monthly payment
+        this.loanPaymentAdjusted = loanAmount;
         this.remainingDebt = loanAmount;
         this.interestRate = interestRate;
         this.startDate = new Date();
@@ -174,7 +174,7 @@ public class Loan{
         }
         else{
             System.out.println("Payment Successful");
-            this.loanAmount = payment - this.calculateMonthlyPayment(); // Adjusted when user pays more than the monthly payment
+            this.loanPaymentAdjusted = payment - this.calculateMonthlyPayment(); // Adjusted when user pays more than the monthly payment
             this.remainingDebt -= payment;
             return;
         }
@@ -186,7 +186,7 @@ public class Loan{
      * <p>
      * The formula used is:
      * <pre>
-     * (loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -loanTerm))
+     * (adjusted loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -loanTerm))
      * </pre>
      * This formula is based on the annuity formula, which calculates the amount that needs to be paid each month to fully repay the loan over the specified term, assuming the interest rate remains constant.
      *
