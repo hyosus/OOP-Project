@@ -7,11 +7,11 @@ public class Account {
    private double transferLimit;
    private Customer customer;
 
-   public Account(){
+   public Account(String accNumber, Customer customer){
       this.localWithdrawLimit = 3000;
       this.overseasWithdrawLimit = 3000;
-      this.balance = balance;
-      this.accountNumber = accountNumber;
+      this.balance = 0;
+      this.accountNumber = accNumber;
       this.customer = customer;
 
    }
@@ -51,14 +51,31 @@ public class Account {
       return balance;
    }
 
-   public void setTransferLimit(){
-      this.transferLimit = transferLimit;
+   public void setTransferLimit(double amount){
+      this.transferLimit = amount;
 
    }
-   public void setOverseasWithdrawLimit(){
-      this.overseasWithdrawLimit = overseasWithdrawLimit;
+   public double getTransferLimit()
+   {
+      return this.transferLimit;
+   }
+
+   public void setOverseasWithdrawLimit(double amount){
+      this.overseasWithdrawLimit = amount;
 
    }
+   public double getOverseasWithdrawLimit(){
+      return this.overseasWithdrawLimit;
+   }
+
+   public void setLocalWithdrawLimit(double amount){
+      this.localWithdrawLimit= amount;
+   }
+   public double getLocalWithdrawLimit()
+   {
+      return this.localWithdrawLimit;
+   }
+
    
    
 

@@ -44,12 +44,7 @@ public class Bank {
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
-        // Prompt user for bank name
-        System.out.println("Enter the name of the bank:");
-        String bankName = scanner.nextLine();
-
-        Bank myBank = new Bank(bankName);
-        System.out.println("Welcome to " + myBank.getName() + " bank!");
+                
 
         // Prompt user for the type of account
         System.out.println("Choose account type: 1 - Regular Account, 2 - Savings Account");

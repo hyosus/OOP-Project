@@ -1,8 +1,11 @@
+import java.time.LocalDate;
+
+
 public class Customer {
     private int customerID;
     private String name;
     private String nric;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private int contactNumber;
     private String email;
     private String address;
@@ -18,14 +21,14 @@ public class Customer {
     }
 
     public String getName() {
-        return name; 
+        return name;
     }
 
     public String getNric() {
         return nric;
     }
 
-    public Date getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
