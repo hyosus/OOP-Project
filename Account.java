@@ -1,12 +1,12 @@
 public class Account {   
    private double localWithdrawLimit ;
    private double overseasWithdrawLimit;
-   private string accountnumber;
+   private String accountNumber;
    private double balance;
    private double transferLimit;
 
 
-    public Account(){
+    public Account(Customer newCustomer, double initialDeposit){
        this.localWithdrawLimit = 3000;
        this.overseasWithdrawLimit = 3000;
        this.balance = balance;
@@ -39,10 +39,14 @@ public class Account {
 
     }
 
-   public void getbalance(){
+
+
+    /**public void getbalance(){
       return balance;
-   }
-           
+   }**/
 
 
+    public double getBalance() {
+        return balance;
+    }
 }
