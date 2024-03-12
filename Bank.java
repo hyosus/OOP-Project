@@ -1,39 +1,33 @@
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 public class Bank {
     private String name;
+    private int totalAccounts = 0;
     private List<Account> accounts;
-    private List<Customer> customers;
 
     public Bank(String name) {
         this.name = name;
         this.accounts = new ArrayList<>();
-        this.customers = new ArrayList<>();
     }
 
     // Adds an account to the bank.
-    public void addAccount(Account account) {
+    public void createAccount(Account account) {
         accounts.add(account);
+        totalAccounts++;
     }
-    // Adds a customer to the bank.
-    public void addCustomer(Customer customer) {
-        customers.add(customer);
-    }
+
     // Processes bank-wide transactions.
-    public void processTransactions() {
-        for (Account account : accounts) {
-            double interestRate = 0.02; // Example interest rate
-            double balance = account.getBalance();
-            double interest = balance * interestRate;
-            account.deposit(interest); // Add interest to the account balance
-        }
-        System.out.println("Processing transactions in " + name + " bank.");
-    }
+    // public void processTransactions() {
+    //     for (Account account : accounts) {
+    //         double interestRate = 0.02; // Example interest rate
+    //         double balance = account.getBalance();
+    //         double interest = balance * interestRate;
+    //         account.deposit(interest); // Add interest to the account balance
+    //     System.out.println("Processing transactions in " + name + " bank.");
+    //     }
+    // }
 
     // Displays information about all accounts in the bank.
     public void displayAccounts() {
@@ -43,86 +37,149 @@ public class Bank {
         }
     }
 
+    // Gets the name of the bank.
     public String getName() {
         return name;
     }
 
     public static void main(String[] args) {
-        Bank myBank = new Bank("MyBank");
         Scanner scanner = new Scanner(System.in);
+        Bank bank = new Bank(null);
 
-        System.out.println("Welcome to " + myBank.getName() + " bank!");
+        System.out.println("Choose an option: 1. Sign up, 2. Log In, 3. Exit");
+        System.out.print("Your choice: ");
 
-        // Prompt user for the type of account
-        System.out.println("Are you an existing customer? 1 - Sign Up, 2 - Log In");
-        int logInTypeChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // consume newline
 
-        if (logInTypeChoice == 1) {
-            // Create a new customer profile
-            System.out.print("Enter your name: ");
-            String name = scanner.nextLine();
+    switch (choice) {
+        case 1: // Sign up
+            System.out.println("Enter Customer ID to create an account:");
+            int customerID = scanner.nextInt();
+            scanner.nextLine(); // consume newline
 
-            System.out.print("Enter your NRIC: ");
-            String nric = scanner.nextLine();
+            Customer customer = new Customer(customerID, null, null, null, customerID, null, null);
+            customer.setCustomerID(1);
 
-            System.out.print("Enter your date of birth (YYYY-MM-DD): ");
-            String dobString = scanner.nextLine();
+            System.out.println("Choose account type: 1. Savings, 2. Current, 3. Fixed Deposit");
+            System.out.print("Your choice: ");
+            int accountTypeChoice = scanner.nextInt();
+            scanner.nextLine();
 
-            Date dob = null;
-            try {
-                dob = new SimpleDateFormat("yyyy-MM-dd").parse(dobString);
-            } catch (ParseException e) {
-                System.out.println("Invalid date format. Exiting...");
-                System.exit(1);
+            String accountType;
+            switch (accountTypeChoice) {
+                case 1:
+                    accountType = "Savings";
+                    break;
+
+                case 2:
+                    accountType = "Current";
+                    break;
+
+                case 3:
+                    accountType = "Fixed Deposit";
+                    break;
+
+                default:
+                    System.out.println("Invalid Choice. Please choose a valid option.");
+                    return; // Add return statement to exit the method if the choice is invalid
             }
 
-            System.out.print("Enter your contact number: ");
-            int contactNumber = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
+                Account newAccount = new Account(accountType, customer);
+                bank.createAccount(newAccount);
+                System.out.println("Account created successfully!");
 
-            System.out.print("Enter your email address: ");
-            String email = scanner.nextLine();
+                performTransactions(newAccount, scanner);
+                break;
 
-            System.out.print("Enter your address: ");
-            String address = scanner.nextLine();
+        case 2:
+            System.out.println("Enter Customer ID to log in: ");
+            int loginCustomerID = scanner.nextInt();
+            scanner.nextLine();
 
-            Customer newCustomer = new Customer(name, nric, dob, contactNumber, email, address);
-            myBank.addCustomer(newCustomer);
+            // --if want to simulate authentication (replace w authentication logic)
+            // Customer loggedInCustomer = authenticateCustomer(loginCustomerID);
 
-            // Display customer information
-            System.out.println("\nCustomer Profile Created:");
-            System.out.println(newCustomer);
+            // if (loggedInCustomer != null) {
+            //     System.out.println("Login successful!");
+            //     // Add logic for user transactions after login
+            //     performTransactions(loggedInCustomer.getAccount(), scanner);
+            // } else {
+            //     System.out.println("Login failed. Invalid Customer ID.");
+            // }
 
-            // Create a new account for the customer
-            System.out.print("\nEnter the initial deposit amount: ");
-            double initialDeposit = scanner.nextDouble();
-            scanner.nextLine(); // Consume the newline character
+            // --if want to skip authentication and proceed directly to transactions
+            // Customer loggedInCustomer = new Customer(loginCustomerID, null, null, null, loginCustomerID, null, null);
 
-            Account newAccount = new Account(newCustomer, initialDeposit);
-            myBank.addAccount(newAccount);
+            // System.out.println("Login successful!");
+            // performTransactions(loggedInCustomer.getAccount(), scanner);
 
-            // Display account information
-            System.out.println("\nAccount Created:");
-            System.out.println(newAccount);
-        } else if (logInTypeChoice == 2) {
-            // Implement log-in logic here if needed
-            System.out.println("Log-in functionality not implemented yet.");
-        } else {
-            System.out.println("Invalid choice. Exiting...");
-            System.exit(1);
+            break;
+
+        case 3:
+            System.out.println("Exiting...");
+            System.exit(0);
+
+        default:
+            System.out.println("Invalid choice. Please choose a valid option.");
+
         }
-
-        // Display initial account information
-        myBank.displayAccounts();
-
-        // Process transactions (e.g., add interest)
-        myBank.processTransactions();
-
-        // Display updated account information
-        myBank.displayAccounts();
-
-        // Close the scanner
         scanner.close();
     }
+
+    private static void performTransactions(Account account, Scanner scanner) {
+        while (true) {
+            System.out.println("Choose a transaction:");
+            System.out.println("1. Display Account Info");
+            System.out.println("2. Withdraw");
+            System.out.println("3. Deposit");
+            System.out.println("4. Transfer");
+            System.out.println("5. Exit");
+
+            int transactionChoice = scanner.nextInt();
+            scanner.nextLine(); // consume the newline
+
+            switch (transactionChoice) {
+                case 1:
+                    account.displayAccountInfo();
+                    break;
+
+                case 2:
+                    System.out.println("Enter the withdrawal amount:");
+                    double withdrawalAmount = scanner.nextDouble();
+                    scanner.nextLine(); // consume the newline
+                    account.withdraw(withdrawalAmount);
+                    break;
+
+                case 3:
+                    System.out.println("Enter the deposit amount:");
+                    double depositAmount = scanner.nextDouble();
+                    scanner.nextLine(); // consume the newline
+                    account.deposit(depositAmount);
+                    break;
+
+                case 4:
+                    // transfer money logic
+                    break;
+
+                case 5:
+                    System.out.println("Exiting transactions!");
+                    System.exit(0);
+
+                default:
+                    System.out.println("Invalid choice. Please choose a valid option.");
+            }
+        }
+    }
+    
+    // Authentication method (replace w authentication logic)
+    // private static Customer authenticateCustomer(int customerID) {
+    //     for (Account account : bank.getAccounts()) {
+    //         Customer customer = account.getCustomer();
+    //         if (customer != null && customer.getCustomerID() == customerID) {
+    //             return customer;
+    //         }
+    //     }
+    //     return null; // Customer not found
+    // }
 }
