@@ -7,10 +7,11 @@ import java.time.format.DateTimeFormatter;
  * Loan class for Banking System
  * <p>
  * Each loan has an ID, a principal amount, a balance, an interest rate, a term, start date and a account number tied to the loan.
- */
+*/
 public class Loan{
 
     public static final double MAX_LOAN_AMOUNT = 10000.0;
+    public static final double MIN_LOAN_AMOUNT = 100.0;
 
     /**
      * The ID of the loan.
@@ -25,7 +26,7 @@ public class Loan{
     /**
      * Initially set to loan amount, but adjusted when user pays more than the monthly payment.
      */
-    private double loanPaymentAdjusted;
+    private double monthlyMinPaymentCalculator;
 
     /**
      * The remaining balance of the loan. Initially set to the loan amount.
@@ -62,7 +63,7 @@ public class Loan{
     public Loan(int loanID, int loanTerm, double loanAmount, double interestRate){
         this.loanID = loanID;
         this.loanAmount = loanAmount; 
-        this.loanPaymentAdjusted = loanAmount;
+        this.monthlyMinPaymentCalculator = loanAmount;
         this.remainingDebt = loanAmount;
         this.interestRate = interestRate;
         this.startDate = LocalDate.now();
@@ -76,6 +77,7 @@ public class Loan{
         System.out.println("Loan Information");
         System.out.println("Loan ID: " + loanID);
         System.out.println("Loaned Amount: " + loanAmount);
+        System.out.println("Loan Term: " + loanTerm + " months");
         System.out.println("Interest Rate: " + interestRate + "%");
         System.out.println("Remaining Loan: " + remainingDebt)  ;
         System.out.println("Minimum Monthly Payment: " + this.calculateMonthlyPayment());
@@ -165,6 +167,7 @@ public class Loan{
      * If the payment is less than the monthly payment, the method will print an error message and return.
      * If the payment is greater than the remaining debt, the method will print an error message and return.
      * Otherwise, the method will subtract the payment from the remaining debt and return.
+     * User is able to pay a minimum of the monthly payment or more up to the remaining debt.
      *
      * @param payment The amount to be paid on this loan.
      */
@@ -181,7 +184,7 @@ public class Loan{
         }
         else{
             System.out.println("Payment Successful");
-            this.loanPaymentAdjusted = payment - this.calculateMonthlyPayment(); // Adjusted when user pays more than the monthly payment
+            this.monthlyMinPaymentCalculator = payment - this.calculateMonthlyPayment(); // Adjusted when user pays more than the monthly payment
             this.remainingDebt -= payment;
             return;
         }
@@ -189,11 +192,11 @@ public class Loan{
     }
 
     /**
-     * Calculates the monthly payment for this loan.
+     * Calculates the minimum monthly payment for this loan.
      * <p>
      * The formula used is:
      * <pre>
-     * (adjusted loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -loanTerm))
+     * (Remaining debt adjusted for payment over minimum * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -loanTerm))
      * </pre>
      * This formula is based on the annuity formula, which calculates the amount that needs to be paid each month to fully repay the loan over the specified term, assuming the interest rate remains constant.
      *
@@ -201,8 +204,8 @@ public class Loan{
      */
     public double calculateMonthlyPayment(){
 
-        double monthlyInterestRate = this.interestRate / 12 / 100;
-        double monthlyPayment = (this.loanPaymentAdjusted * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -this.loanTerm));
+        double monthlyInterestRate = this.interestRate / this.loanTerm / 100;
+        double monthlyPayment = (this.monthlyMinPaymentCalculator * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -this.loanTerm));
         return monthlyPayment;
     }
 
@@ -219,8 +222,8 @@ public class Loan{
             if (loanAmount > MAX_LOAN_AMOUNT) {
                 System.out.println("Loan amount exceeds maximum amount. Please try again.");
             } 
-            else if (loanAmount < 0) {
-                System.out.println("Invalid loan amount. Please try again.");
+            else if (loanAmount < MIN_LOAN_AMOUNT) {
+                System.out.println("Loaned amount is below minimum amount. Please try again.");
             }
             else {
                 break;
@@ -273,6 +276,11 @@ public class Loan{
         
         System.out.println("Confirm loan application? (Y/N)");
         String confirmLoan = newLoanScanner.next();
+
+        while (!confirmLoan.equals("Y") && !confirmLoan.equals("N")) {
+            System.out.println("Invalid input. Please try again");
+            confirmLoan = newLoanScanner.next();
+        }
         if (confirmLoan.equals("N")) {
             System.out.println("Loan application cancelled");
             newLoanScanner.close();
