@@ -15,7 +15,7 @@ public class Branch {
     private String address;
     private int phoneNum;
     private int atmAvailability;
-    private ArrayList<Integer> queueNum;
+    private ArrayList<String> queueNum;
 
     /**
      * Constructor for creating a Branch object with specified attributes.
@@ -135,7 +135,7 @@ public class Branch {
      *
      * @return The queue.
      */
-    public ArrayList<Integer> getQueueNum() {
+    public ArrayList<String> getQueueNum() {
         return queueNum;
     }
 
@@ -144,14 +144,18 @@ public class Branch {
      *
      * @param q The new queue number.
      */
-    public void setQueueNum(ArrayList<Integer> q) {
+    public void setQueueNum(ArrayList<String> q) {
         this.queueNum = q;
     }
 
-    /**
-     * @param args
-     */
     public static void main(String[] args) {
+        Branch newBranch = new Branch("123", false, "Singapore", "Clementi DBS", "430 clementi", 888811111, 3);
+        newBranch.generateQueueNumber(true, 1);
+        newBranch.generateQueueNumber(false, 2);
+        newBranch.generateQueueNumber(false, 4);
+        newBranch.generateQueueNumber(false, 5);
+        newBranch.displayQueue();
+
     }
 
     // Methods
@@ -204,29 +208,35 @@ public class Branch {
     }
 
     /**
-     * Generates a new queue number for the branch.
+     * Generates a new queue number for the branch. First character of the queue 'P'
+     * indicates physical queue, 'V' indicates virtual queue. Priority added at the
+     * back of the queue from a range of 1 to 5, where 1 is the highest priority.
      */
-    public void generateQueueNumber() {
-        int nextQueueNumber = queueNum.isEmpty() ? 1 : queueNum.get(queueNum.size() - 1) + 1; // If list is empty, start
-                                                                                              // with 1. Else increment
-                                                                                              // from last number
-        queueNum.add(nextQueueNumber); // add queue number to array list
-        System.out.println("Generated queue number: " + nextQueueNumber);
+    public void generateQueueNumber(boolean isPhysical, int priority) {
+        int nextQueueNumber = queueNum.isEmpty() ? 1 : queueNum.size() + 1;
+        String queueId = (isPhysical ? "P" : "V") + nextQueueNumber + "-" + priority;
+
+        queueNum.add(queueId); // add queue number to array list
+        System.out.println("Generated queue number: " + queueId);
     }
 
     /**
      * Removes a specified queue number when a customer is served.
      */
     public void removeQueue() {
+        System.err.println("Queue to be removed: ");
+
         try (Scanner in = new Scanner(System.in)) {
             String input = in.next();
 
-            int queueToBeRemoved = Integer.parseInt(input);
+            // int queueToBeRemoved = Integer.parseInt(input);
 
-            if (queueNum.contains(queueToBeRemoved)) {
-                queueNum.remove(queueToBeRemoved);
+            if (queueNum.contains(input)) {
+                queueNum.remove(input);
+                System.out.println("Queue removed. Current queue: " + queueNum);
             } else {
-                System.out.println("Invalid queue number");
+                System.out.println("Invalid queue number, try again.");
+                removeQueue();
             }
         } catch (NumberFormatException e) {
             // TODO Auto-generated catch block
@@ -238,8 +248,20 @@ public class Branch {
      * Displays the current queue and the number of people in line.
      */
     public void displayQueue() {
-        System.out.println("Current queue: " + queueNum);
-        System.out.println("People in line: " + queueNum.size());
+        ArrayList<String> virtualQueue = new ArrayList<String>();
+        ArrayList<String> physicalQueue = new ArrayList<String>();
+
+        for (String queueId : queueNum) {
+            char firstChar = queueId.charAt(0);
+
+            if (firstChar == 'V') {
+                virtualQueue.add(queueId);
+            } else {
+                physicalQueue.add(queueId);
+            }
+        }
+        System.out.println("Physical queues: " + physicalQueue + ", " + physicalQueue.size() + " in line");
+        System.out.println("Virtual queues: " + virtualQueue + ", " + virtualQueue.size() + " in line");
     }
 
     /**
@@ -247,7 +269,8 @@ public class Branch {
      */
     public void displayBranchInfo() {
         System.out.println(
-                "Branch ID: " + branchId + "Country: " + country + "Branch Name: " + branchName + "Address: " + address
+                "Branch ID: " + branchId + "Overseas: " + isOverseas + "Country: " + country + "Branch Name: "
+                        + branchName + "Address: " + address
                         + "Phone number: " + phoneNum + "ATMs Available: " + atmAvailability);
     }
 }
