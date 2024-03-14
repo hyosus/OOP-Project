@@ -2,7 +2,7 @@ import java.time.LocalDate;
 
 
 public class Customer {
-    private int customerID;
+    private String customerID;
     private String name;
     private String nric;
     private LocalDate dateOfBirth;
@@ -10,7 +10,7 @@ public class Customer {
     private String email;
     private String address;
 
-    public Customer(int customerID, String name, String nric, Date dob, int contactNumber, String email,  String address) {
+    public Customer(String customerID, String name, String nric, LocalDate dob, int contactNumber, String email,  String address) {
         this.customerID = customerID;
         this.name = name;
         this.nric = nric;
@@ -62,5 +62,13 @@ public class Customer {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getCustomerID() {
+        return customerID;
+    }
+
+    public void setCustomerID(String customerID) {
+        this.customerID = customerID;
     }
 }
