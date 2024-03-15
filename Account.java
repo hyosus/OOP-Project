@@ -9,14 +9,24 @@ public class Account {
    private Customer customer;
    private double withdrawlLimit;
 
-   public Account(String accountID, String accountType, Customer customer){
+   // public Account(String accountID, String accountType, Customer customer){
+   //    // this.transactionID = TID;
+   //    this.transferLimit = 3000;
+   //    this.accountType = accountType;
+   //    this.withdrawlLimit = 3000;
+   //    this.balance = 0;
+   //    this.accountID = accountID;
+   //    this.customer = customer;
+
+   // }
+   
+   public Account(String accountID, String accountType){
       // this.transactionID = TID;
       this.transferLimit = 3000;
       this.accountType = accountType;
       this.withdrawlLimit = 3000;
       this.balance = 0;
       this.accountID = accountID;
-      this.customer = customer;
 
    }
    
@@ -131,4 +141,6 @@ class Transaction {
             ", Date: " + date +
             ", Account ID: " + accountID;
    }
+
+
 }
