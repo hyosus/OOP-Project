@@ -1,4 +1,4 @@
-CustomerID,"	username","	password","	name","	nric","	dob","	contactNumber","	email","	address","	defaultAccNo","	balance"
-C48120,chris,123456,Chris,t1349341g,1234-12-12,129412412,cech@fem.gom,aed 124,A79052,0
-C72681,chris2,12345,Chris Tee,t23413414e,1234-12-12,12345678,chris@gmail.com,123 Big Road,A18332,0
-C46220,chris3,123456,Chris Tee,t2351353b,1234-12-12,12345678,chris@gmail.com,123 Friday road,A76260,0
+CustomerID,"	username","	password","	name","	nric","	dob","	contactNumber","	email","	address","	defaultAccNo","	balance",savingsAccNo,balance,investmentAccNo,balance
+C48120,chris,123456,Chris,t1349341g,1234-12-12,129412412,cech@fem.gom,aed 124,A79052,0,S12345,0,J24456,
+C72681,chris2,12345,Chris Tee,t23413414e,1234-12-12,12345678,chris@gmail.com,123 Big Road,A18332,0,,,,
+C46220,chris3,123456,Chris Tee,t2351353b,1234-12-12,12345678,chris@gmail.com,123 Friday road,A76260,0,,,,
