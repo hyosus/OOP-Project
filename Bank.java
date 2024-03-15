@@ -3,7 +3,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -13,7 +15,7 @@ public class Bank {
     private int totalAccounts = 0;
     private List<Account> accounts;
     final static String CSV_FILE = "customers.csv";
-
+    
     public Bank(String name) {
         this.name = name;
         this.accounts = new ArrayList<>();
@@ -50,20 +52,59 @@ public class Bank {
     }
 
     public static String generateRandomCustomerID() {
-        Random rand = new Random();
-        int fiveDigitNumber = 10000 + rand.nextInt(90000);
-        return "C" + Integer.toString(fiveDigitNumber);
+        String id;
+        do {
+            Random rand = new Random();
+            int fiveDigitNumber = 10000 + rand.nextInt(90000);
+            id = "C" + Integer.toString(fiveDigitNumber);
+        } while (idExistsInCsv(id));
+        return id;
     }
 
     public static String generateRandomAccountID() {
-        Random rand = new Random();
-        int fiveDigitNumber = 10000 + rand.nextInt(90000);
-        return "A" + Integer.toString(fiveDigitNumber);
+        String id;
+        do {
+            Random rand = new Random();
+            int fiveDigitNumber = 10000 + rand.nextInt(90000);
+            id = "A" + Integer.toString(fiveDigitNumber);
+        } while (idExistsInCsv(id));
+        return id;
     }
 
-    private static boolean signup() {
-        
-        
+    public static boolean idExistsInCsv(String id) {
+        final String CSV_FILE = "customers.csv";
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 1 && parts[0].equals(id)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading from CSV file: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private static boolean usernameExistsInCsv(String username) {
+        final String CSV_FILE = "customers.csv";
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 2 && parts[1].equals(username)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading from CSV file: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public static boolean signup() {
+    
         Scanner scanner = new Scanner(System.in);
         //String accountType;
         String name;
@@ -73,43 +114,88 @@ public class Bank {
         String email;
         String address;
         while (true) {
+            //check username and password
             System.out.println("Enter username and password to create an customer profile (type 'exit' to finish):");
-
-            System.out.print("Username: ");
-            String username = scanner.nextLine();
-            if (username.equalsIgnoreCase("exit") || username.equalsIgnoreCase("no")) {
-                System.out.println("Sign up cancelled.");
-                scanner.close();
-                return false; // Return false if the user wants to exit
-            }
-
-            System.out.print("Password: ");
-            String password = scanner.nextLine();
-
+            String username;
+            do {
+                System.out.print("Enter your username: ");
+                username = scanner.nextLine();
+                if (usernameExistsInCsv(username)) {
+                    System.out.print("Username already exists. Please choose another username.");
+                }
+                else if (username.isEmpty()) {
+                    System.out.println("Username cannot be empty. Please enter a username.");
+                }
+                else if (username.equalsIgnoreCase("exit") || username.equalsIgnoreCase("no")) {
+                    System.out.println("Sign up cancelled.");
+                    return false;
+                }
+            } while (usernameExistsInCsv(username) || username.isEmpty());
+            String password;
+            do {
+                System.out.print("Enter your password: ");
+                password = scanner.nextLine();
+                if (password.isEmpty()) {
+                    System.out.println("Password cannot be empty. Please enter a password.");
+                }
+            } while (password.isEmpty());
+            //check customer details
             System.out.print("Enter your name: ");
-            name = scanner.nextLine();
+            do {
+                name = scanner.nextLine();
+                if (name.isEmpty()) {
+                    System.out.print("Name cannot be empty. Please enter again:");
+                }
+            } while (name.isEmpty());
+            
             System.out.print("Enter your NRIC: ");
-            nric = scanner.nextLine();
-            System.out.print("Enter your date of birth (YYYY-MM-DD): ");
-            dob = LocalDate.parse(scanner.nextLine());
-            System.out.print("Enter your contact number: ");
-            contactNumber = scanner.nextInt();
-            scanner.nextLine();
+            do {
+                nric = scanner.nextLine();
+                if (nric.isEmpty()) {
+                    System.out.print("NRIC cannot be empty. Please enter again:");
+                }
+            } while (nric.isEmpty());
+            
+            while (true) {
+                System.out.print("Enter your date of birth (YYYY-MM-DD): ");
+                try {
+                    dob = LocalDate.parse(scanner.nextLine());
+                    break; // exit the loop if the input was valid
+                } catch (DateTimeParseException e) {
+                    System.out.println("Invalid date format. Please enter the date in the format YYYY-MM-DD.");
+                }
+            }
+            
+            while (true) {
+                System.out.print("Enter your contact number: ");
+                try {
+                    contactNumber = scanner.nextInt();
+                    scanner.nextLine(); // consume newline
+                    break; // exit the loop if the input was valid
+                } catch (InputMismatchException e) {
+                    System.out.print("Invalid contact number. Please enter a valid number.");
+                    scanner.nextLine(); // consume newline
+                }
+            }
+            
             System.out.print("Enter your email: ");
-            email = scanner.nextLine();
+            do {
+                email = scanner.nextLine();
+                if (email.isEmpty()) {
+                    System.out.print("Email cannot be empty. Please enter again:");
+                }
+            } while (email.isEmpty());
+            
             System.out.print("Enter your address: ");
-            address = scanner.nextLine();
+            do {
+                address = scanner.nextLine();
+                if (address.isEmpty()) {
+                    System.out.println("Address cannot be empty. Please enter again:");
+                }
+            } while (address.isEmpty());
 
             try (FileWriter writer = new FileWriter(CSV_FILE, true)) {
-                String customerID = generateRandomCustomerID();
-                //String username = ...; // get username
-                //String password = ...; // get password
-                //String name = ...; // get name
-                //String nric = ...; // get nric
-                //String dob = ...; // get dob
-                //String contactNumber = ...; // get contact number
-                //String email = ...; // get email
-                //String address = ...; // get address
+                String customerID = generateRandomCustomerID(); // generate random customer ID
                 String defaultAccountNumber = generateRandomAccountID(); // generate random account number
                 String accountBalance = "0"; // initial account balance
             
@@ -131,41 +217,45 @@ public class Bank {
             }
 
             System.out.println("Customer profile created successfully.");
-            scanner.close();
             break;
         }
-
         return true; // Return true if the user successfully signs up
     }
 
-    private static void login() {
+    public static boolean login() {
         final String CSV_FILE = "customers.csv";
-        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
-            Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
     
-            System.out.println("Enter your username and password to log in:");
+        while (true) {
+            System.out.println("Enter your username and password to log in, or type 'exit' to return to the main menu:");
             System.out.print("Username: ");
             String username = scanner.nextLine();
+    
+            if (username.equalsIgnoreCase("exit")) {
+                return false;
+            }
+    
             System.out.print("Password: ");
             String password = scanner.nextLine();
     
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 2 && parts[0].equals(username) && parts[1].equals(password)) {
-                    System.out.println("Login successful!");
-                    return;
+            try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    if (parts.length >= 3 && parts[1].equals(username) && parts[2].equals(password)) {
+                        System.out.println("Login successful!");
+                        return true;
+                    }
                 }
+            } catch (IOException e) {
+                System.err.println("Error reading from CSV file: " + e.getMessage());
             }
     
             System.out.println("Incorrect username or password. Please try again.");
-    
-        } catch (IOException e) {
-            System.err.println("Error reading from CSV file: " + e.getMessage());
         }
     }
 
-    public static String showAccountTypeMenu() {
+    /*public static String showAccountTypeMenu() {
         Scanner chooseAccountScanner = new Scanner(System.in);
 
         while (true) {
@@ -186,92 +276,85 @@ public class Bank {
                     System.out.println("Invalid Choice. Please choose a valid option.");
             }
         }
-    }
+    }*/
+
+    public static void showLoginMenu() {
+        Scanner loginScanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("Choose an option:");
+            System.out.println("1. View account(s) info");
+            System.out.println("2. View Branch info");
+            System.out.println("3. View Insurance info");
+            System.out.println("4. View Loan info");
+            System.out.println("5. Deposit");
+            System.out.println("6. Withdraw");
+            System.out.println("7. Transfer");
+            System.out.println("8. Currency Exchange");
+            System.out.println("9. Credit Card");
+            System.out.println("10. Logout");
+            System.out.print("Your choice: ");
+            int choice = loginScanner.nextInt();
+            switch (choice) {
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    break;
+                case 7:
+                    break;
+                case 8:
+                    break;
+                case 9:
+                    break;
+                case 10:
+                    System.out.println("Exiting...");
+                    loginScanner.close();
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice. Please choose a valid option.");
+            }
+            }
+
+        }
 
     public static void main(String[] args) {
         Scanner mainscanner = new Scanner(System.in);
         Bank bank = new Bank(null);
-
-        System.out.println("Choose an option: 1. Sign up, 2. Log In, 3. Exit");
-        System.out.print("Your choice: ");
-
-        int choice = mainscanner.nextInt();
-        mainscanner.nextLine(); // consume newline
-
-    switch (choice) {
-        case 1: // Sign up
-            signup();
-            /*System.out.println("Enter Customer ID to create an account:");
-            int customerID = scanner.nextInt();
-            scanner.nextLine(); // consume newline
-
-            Customer customer = new Customer(customerID, null, null, null, customerID, null, null);
-            customer.setCustomerID(1);
-
-            System.out.println("Choose account type: 1. Savings, 2. Current, 3. Fixed Deposit");
+    
+        while (true) {
+            System.out.println("Choose an option:\n1. Sign up\n2. Log In\n3. Exit");
             System.out.print("Your choice: ");
-            int accountTypeChoice = scanner.nextInt();
-            scanner.nextLine();
-
-            String accountType;
-            switch (accountTypeChoice) {
-                case 1:
-                    accountType = "Savings";
+    
+            int choice = mainscanner.nextInt();
+            mainscanner.nextLine(); // consume newline
+    
+            switch (choice) {
+                case 1: // Sign up
+                    signup();
                     break;
-
-                case 2:
-                    accountType = "Current";
+    
+                case 2: // Log in
+                    if (login()) {
+                        showLoginMenu();
+                    }
                     break;
-
-                case 3:
-                    accountType = "Fixed Deposit";
-                    break;
-
+                case 3: // Exit
+                    System.out.println("Exiting...");
+                    mainscanner.close();
+                    System.exit(0);
+    
                 default:
-                    System.out.println("Invalid Choice. Please choose a valid option.");
-                    return; // Add return statement to exit the method if the choice is invalid
+                    System.out.println("Invalid choice. Please choose a valid option.");
             }
-
-                Account newAccount = new Account(accountType, customer);
-                bank.createAccount(newAccount);
-                System.out.println("Account created successfully!");
-
-                performTransactions(newAccount, scanner);
-                break;*/
-
-        case 2:
-            System.out.println("Enter Customer ID to log in: ");
-            int loginCustomerID = mainscanner.nextInt();
-            mainscanner.nextLine();
-
-            // --if want to simulate authentication (replace w authentication logic)
-            // Customer loggedInCustomer = authenticateCustomer(loginCustomerID);
-
-            // if (loggedInCustomer != null) {
-            //     System.out.println("Login successful!");
-            //     // Add logic for user transactions after login
-            //     performTransactions(loggedInCustomer.getAccount(), scanner);
-            // } else {
-            //     System.out.println("Login failed. Invalid Customer ID.");
-            // }
-
-            // --if want to skip authentication and proceed directly to transactions
-            // Customer loggedInCustomer = new Customer(loginCustomerID, null, null, null, loginCustomerID, null, null);
-
-            // System.out.println("Login successful!");
-            // performTransactions(loggedInCustomer.getAccount(), scanner);
-
-            break;
-
-        case 3:
-            System.out.println("Exiting...");
-            System.exit(0);
-
-        default:
-            System.out.println("Invalid choice. Please choose a valid option.");
-
         }
-        mainscanner.close();
     }
 
     private static void performTransactions(Account account, Scanner scanner) {
