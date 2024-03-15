@@ -222,36 +222,64 @@ public class Bank {
         return true; // Return true if the user successfully signs up
     }
 
-    public static boolean login() {
+    // public static boolean login() {
+    //     final String CSV_FILE = "customers.csv";
+    //     Scanner scanner = new Scanner(System.in);
+    
+    //     while (true) {
+    //         System.out.println("Enter your username and password to log in, or type 'exit' to return to the main menu:");
+    //         System.out.print("Username: ");
+    //         String username = scanner.nextLine();
+    
+    //         if (username.equalsIgnoreCase("exit")) {
+    //             return false;
+    //         }
+    
+    //         System.out.print("Password: ");
+    //         String password = scanner.nextLine();
+    
+    //         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+    //             String line;
+    //             while ((line = reader.readLine()) != null) {
+    //                 String[] parts = line.split(",");
+    //                 if (parts.length >= 3 && parts[1].equals(username) && parts[2].equals(password)) {
+    //                     System.out.println("Login successful!");
+    //                     return true;
+    //                 }
+    //             }
+    //         } catch (IOException e) {
+    //             System.err.println("Error reading from CSV file: " + e.getMessage());
+    //         }
+    
+    //         System.out.println("Incorrect username or password. Please try again.");
+    //     }
+    // }
+
+    public static Customer login() {
         final String CSV_FILE = "customers.csv";
         Scanner scanner = new Scanner(System.in);
-    
+
         while (true) {
             System.out.println("Enter your username and password to log in, or type 'exit' to return to the main menu:");
             System.out.print("Username: ");
             String username = scanner.nextLine();
-    
+
             if (username.equalsIgnoreCase("exit")) {
-                return false;
+                scanner.close();
             }
-    
+
             System.out.print("Password: ");
             String password = scanner.nextLine();
-    
-            try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(",");
-                    if (parts.length >= 3 && parts[1].equals(username) && parts[2].equals(password)) {
-                        System.out.println("Login successful!");
-                        return true;
-                    }
-                }
-            } catch (IOException e) {
-                System.err.println("Error reading from CSV file: " + e.getMessage());
+
+            Customer customer = Customer.loadCustomerByUsernameAndPassword(username, password, CSV_FILE);
+            
+            if (customer != null) {
+                customer.loadAccounts(CSV_FILE, customer.getCustomerID());
+                System.out.println("Login successful!");
+                return customer;
+            } else {
+                System.out.println("Incorrect username or password. Please try again.");
             }
-    
-            System.out.println("Incorrect username or password. Please try again.");
         }
     }
 
@@ -278,8 +306,10 @@ public class Bank {
         }
     }*/
 
-    public static void showLoginMenu() {
+    public static void showLoginMenu(Customer customer) {
         Scanner loginScanner = new Scanner(System.in);
+
+        
 
         while (true) {
             System.out.println("Choose an option:");
@@ -297,6 +327,8 @@ public class Bank {
             int choice = loginScanner.nextInt();
             switch (choice) {
                 case 1:
+                    // display account info
+                    customer.displayAllAccountInfo();
                     break;
                 case 2:
                     break;
@@ -342,8 +374,8 @@ public class Bank {
                     break;
     
                 case 2: // Log in
-                    if (login()) {
-                        showLoginMenu();
+                    {
+                        showLoginMenu(login());
                     }
                     break;
                 case 3: // Exit
