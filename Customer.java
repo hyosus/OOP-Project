@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class Customer {
@@ -90,6 +91,25 @@ public class Customer {
         }
     }
 
+    public boolean hasAccountType(String accountType) {
+        for (Account account : accounts) {
+            if (account.getAccountType().equalsIgnoreCase(accountType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String generateRandomCustomerID() {
+        String id;
+        do {
+            Random rand = new Random();
+            int fiveDigitNumber = 10000 + rand.nextInt(90000);
+            id = "C" + Integer.toString(fiveDigitNumber);
+        } while (Bank.idExistsInCsv(id));
+        return id;
+    }
+
     public void loadAccounts(String filename, String customerID) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -98,6 +118,7 @@ public class Customer {
                 if (parts.length >= 10 && parts[0].equals(customerID)) {
                     for (int i = 9; i < parts.length; i += 2) {
                         String accountId = parts[i];
+                        double balance = Double.parseDouble(parts[i + 1]); // Load the balance from the CSV file
                         String accountType;
                         switch (accountId.charAt(0)) {
                             case 'A':
@@ -112,7 +133,7 @@ public class Customer {
                             default:
                                 continue; // skip this account if the type is unknown
                         }
-                        Account account = new Account(accountId, accountType);
+                        Account account = new Account(accountId, accountType, balance); // Pass the balance to the Account constructor
                         if (!this.accounts.contains(account)) {
                             this.accounts.add(account);
                         }

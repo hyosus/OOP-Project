@@ -51,26 +51,6 @@ public class Bank {
         return name;
     }
 
-    public static String generateRandomCustomerID() {
-        String id;
-        do {
-            Random rand = new Random();
-            int fiveDigitNumber = 10000 + rand.nextInt(90000);
-            id = "C" + Integer.toString(fiveDigitNumber);
-        } while (idExistsInCsv(id));
-        return id;
-    }
-
-    public static String generateRandomAccountID() {
-        String id;
-        do {
-            Random rand = new Random();
-            int fiveDigitNumber = 10000 + rand.nextInt(90000);
-            id = "A" + Integer.toString(fiveDigitNumber);
-        } while (idExistsInCsv(id));
-        return id;
-    }
-
     public static boolean idExistsInCsv(String id) {
         final String CSV_FILE = "customers.csv";
         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
@@ -121,7 +101,7 @@ public class Bank {
                 System.out.print("Enter your username: ");
                 username = scanner.nextLine();
                 if (usernameExistsInCsv(username)) {
-                    System.out.print("Username already exists. Please choose another username.");
+                    System.out.println("Username already exists. Please choose another username.");
                 }
                 else if (username.isEmpty()) {
                     System.out.println("Username cannot be empty. Please enter a username.");
@@ -195,8 +175,8 @@ public class Bank {
             } while (address.isEmpty());
 
             try (FileWriter writer = new FileWriter(CSV_FILE, true)) {
-                String customerID = generateRandomCustomerID(); // generate random customer ID
-                String defaultAccountNumber = generateRandomAccountID(); // generate random account number
+                String customerID = Customer.generateRandomCustomerID(); // generate random customer ID
+                String defaultAccountNumber = Account.generateRandomDefaultAccountID(); // generate random account number
                 String accountBalance = "0"; // initial account balance
             
                 writer.append(customerID).append(",")
@@ -260,13 +240,9 @@ public class Bank {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("Enter your username and password to log in, or type 'exit' to return to the main menu:");
+            System.out.println("Enter your username and password to log in");
             System.out.print("Username: ");
             String username = scanner.nextLine();
-
-            if (username.equalsIgnoreCase("exit")) {
-                scanner.close();
-            }
 
             System.out.print("Password: ");
             String password = scanner.nextLine();
@@ -309,8 +285,6 @@ public class Bank {
     public static void showLoginMenu(Customer customer) {
         Scanner loginScanner = new Scanner(System.in);
 
-        
-
         while (true) {
             System.out.println("Choose an option:");
             System.out.println("1. View account(s) info");
@@ -323,6 +297,7 @@ public class Bank {
             System.out.println("8. Currency Exchange");
             System.out.println("9. Credit Card");
             System.out.println("10. Logout");
+            System.out.println("11. Create New Account");
             System.out.print("Your choice: ");
             int choice = loginScanner.nextInt();
             switch (choice) {
@@ -336,9 +311,11 @@ public class Bank {
                     break;
                 case 4:
                     break;
-                case 5:
+                case 5: // Deposit
+                    Account.depositToAccount(loginScanner, customer);
                     break;
-                case 6:
+                case 6: // Withdraw
+                    Account.withdrawFromAccount(loginScanner, customer);
                     break;
                 case 7:
                     break;
@@ -350,12 +327,14 @@ public class Bank {
                     System.out.println("Exiting...");
                     loginScanner.close();
                     System.exit(0);
+                case 11:
+                    Account.createNewAccount(loginScanner, customer);
+                    break;
                 default:
                     System.out.println("Invalid choice. Please choose a valid option.");
             }
-            }
-
         }
+    }
 
     public static void main(String[] args) {
         Scanner mainscanner = new Scanner(System.in);
