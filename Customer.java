@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 
 public class Customer {
@@ -146,6 +147,29 @@ public class Customer {
         }
     }
 
+    public Account promptAccount(Scanner scanner) {
+        if (this.accounts.isEmpty()) {
+            System.out.println("No accounts available.");
+            return null;
+        }
+
+        System.out.println("Please choose an account:");
+        for (int i = 0; i < this.accounts.size(); i++) {
+            System.out.printf("%d. Account ID: %s, Type: %s, Balance: %.2f\n", i + 1, this.accounts.get(i).getAccountID(), this.accounts.get(i).getAccountType(), this.accounts.get(i).getBalance());
+        }
+
+        int choice;
+        do {
+            System.out.print("Your choice: ");
+            choice = scanner.nextInt();
+            if (choice < 1 || choice > this.accounts.size()) {
+                System.out.println("Invalid choice. Please choose a valid option.");
+            }
+        } while (choice < 1 || choice > this.accounts.size());
+
+    return this.accounts.get(choice - 1);
+}
+
     public static Customer loadCustomerByUsernameAndPassword(String username, String password, String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -169,5 +193,5 @@ public class Customer {
         }
 
         return null; // Return null if username and password not found
-  }
+    }
 }

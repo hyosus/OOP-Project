@@ -12,20 +12,18 @@ import java.util.Scanner;
 
 public class Bank {
     private String name;
-    private int totalAccounts = 0;
-    private List<Account> accounts;
     final static String CSV_FILE = "customers.csv";
+    final static String LOAN_FILE = "Loans.csv";
     
     public Bank(String name) {
         this.name = name;
-        this.accounts = new ArrayList<>();
     }
 
     // Adds an account to the bank.
-    public void createAccount(Account account) {
-        accounts.add(account);
-        totalAccounts++;
-    }
+    // public void createAccount(Account account) {
+    //     accounts.add(account);
+    //     totalAccounts++;
+    // }
 
     // Processes bank-wide transactions.
     // public void processTransactions() {
@@ -39,12 +37,12 @@ public class Bank {
     // }
 
     // Displays information about all accounts in the bank.
-    public void displayAccounts() {
-        System.out.println("Accounts in " + name + " bank:");
-        for (Account account : accounts) {
-            System.out.println(account);
-        }
-    }
+    // public void displayAccounts() {
+    //     System.out.println("Accounts in " + name + " bank:");
+    //     for (Account account : accounts) {
+    //         System.out.println(account);
+    //     }
+    // }
 
     // Gets the name of the bank.
     public String getName() {
@@ -251,7 +249,11 @@ public class Bank {
             
             if (customer != null) {
                 customer.loadAccounts(CSV_FILE, customer.getCustomerID());
+                for (Account account : customer.getAccounts()) {
+                    account.loadLoans(LOAN_FILE, account.getAccountID());
+                }
                 System.out.println("Login successful!");
+                //scanner.close();
                 return customer;
             } else {
                 System.out.println("Incorrect username or password. Please try again.");
@@ -291,45 +293,66 @@ public class Bank {
             System.out.println("2. View Branch info");
             System.out.println("3. View Insurance info");
             System.out.println("4. View Loan info");
-            System.out.println("5. Deposit");
-            System.out.println("6. Withdraw");
-            System.out.println("7. Transfer");
-            System.out.println("8. Currency Exchange");
-            System.out.println("9. Credit Card");
-            System.out.println("10. Logout");
+            System.out.println("5. Take Loan");
+            System.out.println("6. Deposit");
+            System.out.println("7. Withdraw");
+            System.out.println("8. Transfer");
+            System.out.println("9. Currency Exchange");
+            System.out.println("10. Credit Card");
             System.out.println("11. Create New Account");
+            System.out.println("12. Settings");
+            System.out.println("13. Logout");
+            
             System.out.print("Your choice: ");
             int choice = loginScanner.nextInt();
+            loginScanner.nextLine();
             switch (choice) {
                 case 1:
-                    // display account info
+                    // Display Account info
                     customer.displayAllAccountInfo();
                     break;
                 case 2:
+                    // View Branch info
                     break;
                 case 3:
+                    // View Insurance info
                     break;
                 case 4:
+                    // View Loan info
+                    Account viewLoanChoice = customer.promptAccount(loginScanner);
+                    viewLoanChoice.displayLoans();
+                    //To Do: Add option to pay loan
                     break;
-                case 5: // Deposit
+                case 5: 
+                    // Take Loan
+                    Account loanChoice = customer.promptAccount(loginScanner);
+                    loanChoice.createLoan(LOAN_FILE);
+                    break;
+                case 6: // Deposit
                     Account.depositToAccount(loginScanner, customer);
                     break;
-                case 6: // Withdraw
+                case 7: // Withdraw
                     Account.withdrawFromAccount(loginScanner, customer);
                     break;
-                case 7:
-                    break;
                 case 8:
+                    // Transfer
                     break;
                 case 9:
+                    // Currency Exchange
                     break;
                 case 10:
-                    System.out.println("Exiting...");
-                    loginScanner.close();
-                    System.exit(0);
+                    // Credit Card
+                    break;
                 case 11:
                     Account.createNewAccount(loginScanner, customer);
                     break;
+                case 12:
+                    // Settings
+                    break;
+                case 13:
+                    System.out.println("Exiting...");
+                    loginScanner.close();
+                    System.exit(0);
                 default:
                     System.out.println("Invalid choice. Please choose a valid option.");
             }

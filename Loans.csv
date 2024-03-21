@@ -1,0 +1,5 @@
+AccountNo,Loan Status,Loan ID,Type,Term,Principal,interest,Remaining Debt,Date
+A79052,Active,85286,Personal,24,2000,3,2000,21/3/2024
+A79052,Active,84072,Housing,36,1222,3.5,1222,21/3/2024
+S12345,Active,61331,Personal,12,4000,2.5,4000,21/3/2024
+J24456,Active,11096,Business,36,6000,3.5,6000,21/3/2024

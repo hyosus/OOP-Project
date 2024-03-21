@@ -1,8 +1,12 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -18,6 +22,7 @@ public class Account {
    private double transferLimit;
    private Customer customer;
    private double withdrawlLimit;
+   private List<Loan> loanList;
 
    // public Account(String accountID, String accountType, Customer customer){
    //    // this.transactionID = TID;
@@ -31,7 +36,7 @@ public class Account {
    // }
 
    // static list to hold all accounts
-   private static List<Account> allAccounts = new ArrayList<>();
+   //private static List<Account> allAccounts = new ArrayList<>();
    
    public Account(String accountID, String accountType, double balance){
       // this.transactionID = TID;
@@ -40,7 +45,8 @@ public class Account {
       this.withdrawlLimit = 3000;
       this.balance = balance;
       this.accountID = accountID;
-      allAccounts.add(this);
+      this.loanList = new ArrayList<>();
+      //allAccounts.add(this);
    }
 
    public static String generateRandomDefaultAccountID() {
@@ -104,6 +110,32 @@ public class Account {
           
       }
   }
+
+  public void createLoan(String csvFile) {
+      Random randomNo = new Random();
+      int loanID = randomNo.nextInt(100000);
+      Loan loanInstance = new Loan();
+      Loan newLoan = loanInstance.newLoan(loanID);
+
+      // Add the new loan to the loan list
+      this.loanList.add(newLoan);
+
+      // Write the new loan to the CSV file
+      try (FileWriter writer = new FileWriter(csvFile, true)) {
+         writer.append(this.accountID).append(',');
+         writer.append(newLoan.getloanStatus()).append(',');
+         writer.append(Integer.toString(loanID)).append(',');
+         writer.append(newLoan.getLoanType()).append(',');
+         writer.append(Integer.toString(newLoan.getLoanTerm())).append(',');
+         writer.append(Double.toString(newLoan.getPrincipalLoanAmount())).append(',');
+         writer.append(Double.toString(newLoan.getInterestRate())).append(',');
+         writer.append(Double.toString(newLoan.getRemainingDebt())).append(',');
+         writer.append(newLoan.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))).append('\n');
+     } catch (IOException e) {
+         System.out.println("An error occurred while writing to the CSV file.");
+         e.printStackTrace();
+     }
+   }
    
    public void deposit(double amount){
       balance += amount;
@@ -291,6 +323,40 @@ public class Account {
       }
   }
 
+  public void loadLoans(String filename, String accountID) {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+      try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+         String line;
+         while ((line = reader.readLine()) != null) {
+            String[] data = line.split(",");
+            // Check if the accountID matches
+            if (data[0].equals(accountID)) {
+                  // Create a new Loan object and add it to the list
+                  int loanID = Integer.parseInt(data[2]);
+                  String loanType = data[3];
+                  int loanTerm = Integer.parseInt(data[4]);
+                  double principalLoanAmount = Double.parseDouble(data[5]);
+                  double interestRate = Double.parseDouble(data[6]);
+                  Loan loan = new Loan(loanID, loanType, loanTerm, principalLoanAmount, interestRate);
+                  
+                  // Set the other attributes of the Loan object
+                  loan.setLoanStatus(data[1]);
+                  loan.setRemainingDebt(Double.parseDouble(data[7]));
+                  loan.setStartDate(LocalDate.parse(data[8], formatter));
+                  
+                  // Add the loan to the loanList
+                  loanList.add(loan);
+            }
+         }
+      } catch (IOException e) {
+         // Handle exception
+      }
+   }
+
+
+
+   
+
    //display
    public void displayAccountInfo() {
       System.out.println("~~~~~~~~~~~~~ This is your Account Info ~~~~~~~~~~~~~");
@@ -302,21 +368,34 @@ public class Account {
       System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
   }
 
+  public void displayLoans() {
+      if (loanList.isEmpty()) {
+         System.out.println("No loans available.");
+         return;
+      }
+
+      System.out.println("Number of loans: " + loanList.size());
+      
+      for (Loan loan : loanList) {
+         loan.getLoanInfo();
+      }
+   }
+
    public void displayTransactionInfo(){
 
    }
 
-   public static Account getAccountByID(String accountID) {
-      for (Account account : allAccounts) {
-         if (account.getAccountID().equals(accountID)) {
-            return account;
-         }
-      }
-      return null; // Account not found
-   }
+   // public static Account getAccountByID(String accountID) {
+   //    for (Account account : allAccounts) {
+   //       if (account.getAccountID().equals(accountID)) {
+   //          return account;
+   //       }
+   //    }
+   //    return null; // Account not found
+   // }
 
    // getter setter
-   public double getbalance(){
+   public double getBalance(){
       return balance;
    }
    public String getAccountID(){

@@ -5,6 +5,7 @@ import java.time.LocalDate;
  * Loan class for Banking System
  * <p>
  * Each loan has an ID, a principal amount, a balance, an interest rate, start date and loan term tied to the loan.
+ * A deleteLoan does not exist here and if required can and should be implemented outside of the class.
 */
 public class Loan{
 
@@ -73,11 +74,16 @@ public class Loan{
         this.loanID = loanID;
         this.loanType = loanType;
         this.principalLoanAmount = principalLoanAmount; 
-        this.monthlyMinPayment = principalLoanAmount;
+        this.monthlyMinPayment = calculateMonthlyPayment();
         this.remainingDebt = principalLoanAmount;
         this.interestRate = interestRate;
         this.startDate = LocalDate.now();
         this.loanTerm = loanTerm;
+    }
+
+    //Empty constructor for Loan
+    public Loan(){
+
     }
 
     /**
@@ -93,7 +99,7 @@ public class Loan{
         System.out.println("Loan Term: " + loanTerm + " months");
         System.out.println("Interest Rate: " + interestRate + "%");
         System.out.println("Remaining Loan: " + remainingDebt)  ;
-        System.out.println("Minimum Monthly Payment: " + this.calculateMonthlyPayment()); //for default loan (monthly payment)
+        System.out.println("Minimum Monthly Payment: " + String.format("%.2f", this.calculateMonthlyPayment())); //for default loan (monthly payment)
     }
 
     /**
@@ -141,17 +147,15 @@ public class Loan{
      * Sets the type of this loan.
      * @param loanType
      */
-
     public void setLoanType(String loanType){
         this.loanType = loanType;
     }
 
     /**
      * Gets the original principal amount of this loan.
-     * @param loanID
      * @return The original principal amount of this loan.
      */
-    public double getPrincipalLoanAmount(int loanID){
+    public double getPrincipalLoanAmount(){
         return this.principalLoanAmount;
     }
 
@@ -163,6 +167,21 @@ public class Loan{
         this.principalLoanAmount = amount;
     }
 
+    /**
+     * Gets the monthly minimum payment of this loan.
+     * @return The monthly minimum payment of this loan.
+     */
+    public double getMonthlyMinPayment(){
+        return this.monthlyMinPayment;
+    }
+
+    /**
+     * Sets the monthly minimum payment of this loan.
+     * @param payment
+     */
+    public void setMonthlyMinPayment(double payment){
+        this.monthlyMinPayment = payment;
+    }
     /**
      * Gets the interest rate of this loan.
      * @return The interest rate of this loan.
@@ -253,6 +272,7 @@ public class Loan{
             System.out.println("Payment Successful");
             this.monthlyMinPayment = payment - this.calculateMonthlyPayment(); // Adjusted when user pays more than the monthly payment
             this.remainingDebt -= payment;
+            this.setMonthlyMinPayment(calculateMonthlyPayment());
             if (this.remainingDebt == 0) {
                 System.out.println("Loan has been fully paid off");
                 setLoanStatus("Paid Off");
@@ -276,21 +296,23 @@ public class Loan{
     public double calculateMonthlyPayment(){
 
         double monthlyInterestRate = this.interestRate / 100 / 12;
-        double monthlyPayment = (this.monthlyMinPayment * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -this.loanTerm));
+        double monthlyPayment = (this.remainingDebt * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -this.loanTerm));
         return monthlyPayment;
     }
 
     /**
      * Creates a new loan for the user.
      * <p>
+     * When calling the function, (id) is required to allow bank to choose their id format
      * The user will be prompted to enter the loan amount, loan type and choose the term, and the loan will be created with the current date as the start date.
      * The user will be shown the loan details and asked to confirm the loan application.
      * If the user confirms the loan application, the method will return the new loan.
      * If the user cancels the loan application, the method will return null.
      *
-     * @return The new loan, or null if the user cancels the loan application.
+     * @param id
+     * @return The new loan object, or null if the user cancels the loan application.
      */
-    public Loan newLoan(){
+    public Loan newLoan(int id){
         // To be updated to have the new loan be added to csv tagged to user
 
         System.out.println("Application for new loan");
@@ -404,10 +426,7 @@ public class Loan{
             return null;
         }
 
-        newLoanScanner.close();
-        // Need to add way to automatically generate loanID
-
-        Loan newLoan = new Loan(loanID, loanType, loanTerm, principalLoanAmount, interestRate);
+        Loan newLoan = new Loan(id, loanType, loanTerm, principalLoanAmount, interestRate);
 
         System.out.println("Loan application successful");
 
