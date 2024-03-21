@@ -143,38 +143,18 @@ public class Account {
 
    }
 
-   public static void depositToAccount(Scanner scanner, Customer customer) {
-      List<Account> customerAccounts = customer.getAccounts();
-      if (customerAccounts.isEmpty()) {
-          System.out.println("No accounts available.");
+   public static void depositToAccount(Scanner scanner, Account depositAccount) {
+      if (depositAccount == null) {
+          System.out.println("No account selected.");
           return;
-      }
-  
-      System.out.println("Select an account to deposit to:");
-      for (int i = 0; i < customerAccounts.size(); i++) {
-          System.out.println((i + 1) + ". Account ID: " + customerAccounts.get(i).getAccountID());
-      }
-  
-      int accountIndex;
-      while (true) {
-          System.out.print("Enter the number of the account: ");
-          accountIndex = scanner.nextInt() - 1;
-          if (accountIndex >= 0 && accountIndex < customerAccounts.size()) {
-              break;
-          } else {
-              System.out.println("Invalid choice. Please choose a valid option.");
-          }
       }
   
       System.out.print("Enter deposit amount: ");
       double depositAmount = scanner.nextDouble();
       scanner.nextLine(); // Consume the newline character
   
-      Account depositAccount = customerAccounts.get(accountIndex);
       depositAccount.deposit(depositAmount);
       depositAccount.updateAccountInCsv();
-
-      
   }
 
 
@@ -193,34 +173,16 @@ public class Account {
 
    }
 
-   public static void withdrawFromAccount(Scanner scanner, Customer customer) {
-      List<Account> customerAccounts = customer.getAccounts();
-      if (customerAccounts.isEmpty()) {
-          System.out.println("No accounts available.");
+   public static void withdrawFromAccount(Scanner scanner, Account withdrawAccount) {
+      if (withdrawAccount == null) {
+          System.out.println("No account selected.");
           return;
-      }
-  
-      System.out.println("Select an account to withdraw from:");
-      for (int i = 0; i < customerAccounts.size(); i++) {
-          System.out.println((i + 1) + ". Account ID: " + customerAccounts.get(i).getAccountID());
-      }
-  
-      int accountIndex;
-      while (true) {
-          System.out.print("Enter the number of the account: ");
-          accountIndex = scanner.nextInt() - 1;
-          if (accountIndex >= 0 && accountIndex < customerAccounts.size()) {
-              break;
-          } else {
-              System.out.println("Invalid choice. Please choose a valid option.");
-          }
       }
   
       System.out.print("Enter withdrawal amount: ");
       double withdrawalAmount = scanner.nextDouble();
       scanner.nextLine(); // Consume the newline character
   
-      Account withdrawAccount = customerAccounts.get(accountIndex);
       withdrawAccount.withdraw(withdrawalAmount);
       withdrawAccount.updateAccountInCsv();
   }

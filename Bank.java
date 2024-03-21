@@ -329,10 +329,12 @@ public class Bank {
                     loanChoice.createLoan(LOAN_FILE);
                     break;
                 case 6: // Deposit
-                    Account.depositToAccount(loginScanner, customer);
+                    Account depositChoice = customer.promptAccount(loginScanner);
+                    Account.depositToAccount(loginScanner, depositChoice);
                     break;
                 case 7: // Withdraw
-                    Account.withdrawFromAccount(loginScanner, customer);
+                    Account withdrawChoice = customer.promptAccount(loginScanner);
+                    Account.withdrawFromAccount(loginScanner, withdrawChoice);
                     break;
                 case 8:
                     // Transfer
