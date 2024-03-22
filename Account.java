@@ -117,6 +117,11 @@ public class Account {
       Loan loanInstance = new Loan();
       Loan newLoan = loanInstance.newLoan(loanID);
 
+      if (newLoan == null) {
+         System.out.println("Loan application cancelled.");
+         return;
+      }
+
       // Add the new loan to the loan list
       this.loanList.add(newLoan);
 
