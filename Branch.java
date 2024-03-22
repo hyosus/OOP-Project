@@ -150,15 +150,15 @@ public class Branch {
 
     public static void main(String[] args) {
         Branch newBranch = new Branch("123", false, "Singapore", "Clementi DBS", "430 clementi", 888811111, 3);
-        newBranch.generateQueueNumber(true, 1);
-        newBranch.generateQueueNumber(false, 2);
-        newBranch.generateQueueNumber(false, 4);
-        newBranch.generateQueueNumber(false, 5);
-        newBranch.displayQueue();
-
     }
 
     // Methods
+    // Method that returns a Branch object
+    public static Branch createBranch(String bid, boolean isOverseas, String country, String bname, String address,
+            int hp, int atmAvail) {
+        return new Branch(bid, isOverseas, country, bname, address, hp, atmAvail);
+    }
+
     /**
      * Allows the user to update certain details of the branch.
      */
@@ -197,8 +197,10 @@ public class Branch {
                     break;
 
                 case 4:
-                    break;
+                    System.out.println("Exiting...");
+                    System.exit(0);
                 default:
+                    System.out.println("Invalid input. Exiting...");
                     break;
             }
         } catch (NumberFormatException e) {
