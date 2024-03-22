@@ -192,9 +192,13 @@ public class Loan{
 
     /**
      * Sets the interest rate of this loan. (e.g. 5 = 5% interest rate)
+     * Note: Interest rate cannot be negative.
      * @param rate
      */
-    public void setInterestRate(double rate){
+    public void setInterestRate(double rate) {
+        if (rate < 0) {
+            throw new IllegalArgumentException("Interest rate cannot be negative");
+        }
         this.interestRate = rate;
     }
 
