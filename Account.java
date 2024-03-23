@@ -198,7 +198,7 @@ public class Account {
          
       }
       if (balance >= amount) {
-         transferLimit-= amount
+         transferLimit-= amount;
          balance -= amount;
          recipient.deposit(amount);
          System.out.println("Transaction successful. $" + amount + " transferred to account " + recipient.accountID + ".");
