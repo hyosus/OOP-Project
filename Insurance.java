@@ -10,6 +10,7 @@ public class Insurance {
 
     /**
      * Defines the types of insurance available.
+     * Currently supported types are Life insurance, Medical insurance, and Travel insurance.
      */
     public enum InsuranceType 
     {
@@ -31,11 +32,10 @@ public class Insurance {
     /**
      * Constructs a new insurance policy with the specified ID, type, list of beneficiary names,
      * coverage amount and insurance premium of the insurance.
-     * @param insuranceType The type of insurance policy.
-     * @param insuranceID The unique identifier for the insurance policy.
-     * @param coverageAmount The coverage amount of the insurance.
-     * @param insurancePremium The premium (cost) of the insurance. 
-     * @param beneficiaryNames The list of beneficiary names associated with the insurance policy
+     * @param type The type of insurance policy.
+     * @param id The unique identifier for the insurance policy.
+     * @param premium The premium (cost) of the insurance. 
+     * @param coverage The coverage amount of the insurance.
      */
     public Insurance(InsuranceType type,String id,double premium, double coverage) {
         this.insuranceType = type;
@@ -45,6 +45,9 @@ public class Insurance {
         this.beneficiaryNames = new ArrayList<>();
     }
     //Empty constructor for Insurance
+    /**
+     * Constructs a empty insurance object.
+     */
     public Insurance()
     {
         this.beneficiaryNames = new ArrayList<>();
