@@ -198,10 +198,11 @@ public class Account {
          
       }
       if (balance >= amount) {
-
+         transferLimit-= amount
          balance -= amount;
          recipient.deposit(amount);
          System.out.println("Transaction successful. $" + amount + " transferred to account " + recipient.accountID + ".");
+         System.out.println("Remaining daily limit: $" + transferLimit + ".");
       } else {
          System.out.println("Transaction failed. Insufficient funds or invalid amount.");
       }
