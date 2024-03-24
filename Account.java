@@ -15,7 +15,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Account {
-   private int transactionID;
+   //private int transactionID;
    private String accountType;
    private String accountID;
    private double balance;
@@ -62,42 +62,46 @@ public class Account {
    public static String generateRandomNewAccountID(String accountType) {
       String prefix = "";
       switch (accountType) {
-          case "Savings":
-              prefix = "S";
-              break;
-          case "Investment":
-              prefix = "J";
-              break;
+         case "Savings":
+            prefix = "S";
+            break;
+         case "Investment":
+            prefix = "J";
+            break;
       }
-  
+
       Random random = new Random();
       String newAccountID;
       do {
           int fiveDigitNumber = 10000 + random.nextInt(90000); // Generate a random 6-digit number
-          newAccountID = prefix + fiveDigitNumber;
-      } while (Bank.idExistsInCsv(newAccountID)); // Keep generating a new account ID until it doesn't exist in the CSV file
-  
-      return newAccountID;
-  }
+         newAccountID = prefix + fiveDigitNumber;
+   } while (Bank.idExistsInCsv(newAccountID)); // Keep generating a new account ID until it doesn't exist in the CSV file
+
+   return newAccountID;
+}
+
+
 
    public static void createNewAccount(Scanner scanner, Customer customer) {
       System.out.println("Select the type of account to create:");
       System.out.println("1. Savings");
       System.out.println("2. Investment");
-  
+
       int accountTypeIndex;
       while (true) {
-          System.out.print("Enter the number of the account type: ");
-          accountTypeIndex = scanner.nextInt();
-          scanner.nextLine(); // Consume the newline character
-          if (accountTypeIndex == 1 || accountTypeIndex == 2) {
-              break;
-          } else {
-              System.out.println("Invalid choice. Please choose a valid option.");
-          }
-      }
-  
+         System.out.print("Enter the number of the account type: ");
+         accountTypeIndex = scanner.nextInt();
+         scanner.nextLine(); // Consume the newline character
+         if (accountTypeIndex == 1 || accountTypeIndex == 2) {
+            break;
+         } else {
+            System.out.println("Invalid choice. Please choose a valid option.");
+         }
+   }
+
       String accountType = accountTypeIndex == 1 ? "Savings" : "Investment";
+      
+      
   
       if (customer.hasAccountType(accountType)) {
           System.out.println("You already have a " + accountType + " account.");
@@ -110,6 +114,7 @@ public class Account {
           
       }
   }
+  
 
   public void createLoan(String csvFile) {
       Random randomNo = new Random();
