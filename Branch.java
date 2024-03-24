@@ -148,17 +148,23 @@ public class Branch {
         this.queueNum = q;
     }
 
-    public static void main(String[] args) {
-        Branch newBranch = new Branch("123", false, "Singapore", "Clementi DBS", "430 clementi", 888811111, 3);
-        newBranch.generateQueueNumber(true, 1);
-        newBranch.generateQueueNumber(false, 2);
-        newBranch.generateQueueNumber(false, 4);
-        newBranch.generateQueueNumber(false, 5);
-        newBranch.displayQueue();
-
+    // Methods
+    /**
+     * Returns branch object when creating it
+     * 
+     * @param bid        The branch ID.
+     * @param isOverseas Indicates whether the branch is overseas.
+     * @param country    The country where the branch is located.
+     * @param bname      The name of the branch.
+     * @param address    The address of the branch.
+     * @param hp         The phone number of the branch.
+     * @param atmAvail   The availability of ATMs in the branch.
+     */
+    public static Branch createBranch(String bid, boolean isOverseas, String country, String bname, String address,
+            int hp, int atmAvail) {
+        return new Branch(bid, isOverseas, country, bname, address, hp, atmAvail);
     }
 
-    // Methods
     /**
      * Allows the user to update certain details of the branch.
      */
@@ -197,12 +203,13 @@ public class Branch {
                     break;
 
                 case 4:
-                    break;
+                    System.out.println("Exiting...");
+                    System.exit(0);
                 default:
+                    System.out.println("Invalid input. Exiting...");
                     break;
             }
         } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -211,6 +218,10 @@ public class Branch {
      * Generates a new queue number for the branch. First character of the queue 'P'
      * indicates physical queue, 'V' indicates virtual queue. Priority added at the
      * back of the queue from a range of 1 to 5, where 1 is the highest priority.
+     * 
+     * @param isPhysical Physical or virtual queue.
+     * @param priority   Indicates the priority of queue.
+     * 
      */
     public void generateQueueNumber(boolean isPhysical, int priority) {
         int nextQueueNumber = queueNum.isEmpty() ? 1 : queueNum.size() + 1;

@@ -62,6 +62,11 @@ public class Customer {
         this.nric = nric;
     }
 
+    public void setDateofBirth(LocalDate dob)
+    {
+        this.dateOfBirth = dob;
+    }
+
     public void setConteactNumber(int contactNumber) {
         this.contactNumber = contactNumber;
     }

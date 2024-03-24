@@ -10,6 +10,7 @@ public class Insurance {
 
     /**
      * Defines the types of insurance available.
+     * Currently supported types are Life insurance, Medical insurance, and Travel insurance.
      */
     public enum InsuranceType 
     {
@@ -31,17 +32,24 @@ public class Insurance {
     /**
      * Constructs a new insurance policy with the specified ID, type, list of beneficiary names,
      * coverage amount and insurance premium of the insurance.
-     * @param insuranceType The type of insurance policy.
-     * @param insuranceID The unique identifier for the insurance policy.
-     * @param coverageAmount The coverage amount of the insurance.
-     * @param insurancePremium The premium (cost) of the insurance. 
-     * @param beneficiaryNames The list of beneficiary names associated with the insurance policy
+     * @param type The type of insurance policy.
+     * @param id The unique identifier for the insurance policy.
+     * @param premium The premium (cost) of the insurance. 
+     * @param coverage The coverage amount of the insurance.
      */
-    public Insurance() {
-        this.insuranceType = chooseInsuranceType();
-        this.insuranceID = generateInsuranceID(this.insuranceType);
-        this.coverageAmount = calculateCoverageAmount(this.insuranceType); 
-        this.insurancePremium = calculatePremium(this.insuranceType);
+    public Insurance(InsuranceType type,String id,double premium, double coverage) {
+        this.insuranceType = type;
+        this.insuranceID = id;
+        this.coverageAmount = coverage;
+        this.insurancePremium = premium;
+        this.beneficiaryNames = new ArrayList<>();
+    }
+    //Empty constructor for Insurance
+    /**
+     * Constructs a empty insurance object.
+     */
+    public Insurance()
+    {
         this.beneficiaryNames = new ArrayList<>();
     }
     /**
@@ -435,10 +443,19 @@ public class Insurance {
         } while (true);
     }
 
-    public static void main(String[] args) {
-        Insurance insurance = new Insurance();  // Create a new Insurance object
-        Scanner scanner = new Scanner(System.in);
-
+    /**
+    * Displays an interactive menu for managing an insurance policy. The menu allows the user to
+    * display insurance details, process a claim, add or remove beneficiaries, or exit the program.
+    *
+    * @param insurance The Insurance object for which the menu operations are to be performed.
+    *                  If the insurance is {@code null}, the menu will print a message and not display the options.
+    */
+    public void menu(Insurance insurance)
+    {
+        if (insurance == null)
+        {
+           System.out.println("Cannot display menu. Insurance does not exist.");
+        }
         while (true) {
             System.out.println("\nInsurance Management System");
             System.out.println("1. Display Insurance Details");
@@ -448,6 +465,7 @@ public class Insurance {
             System.out.println("5. Exit");
             System.out.print("Enter your choice: ");
 
+            Scanner scanner = new Scanner((System.in));
             int choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
@@ -480,4 +498,46 @@ public class Insurance {
         }
     }
 
+    /**
+    * Guides the user through the process of creating a new insurance policy. It prompts the user
+    * to select an insurance type, input their beneficiary, and confirm the creation of the policy.
+    * If the user confirms, it will create and return a new Insurance object with the specified details.
+    *
+    * @return A new Insurance object with details specified by the user. Returns {@code null} if the user
+    *         cancels the creation process.
+    */
+    public Insurance createInsurance() {
+        InsuranceType type = this.chooseInsuranceType();
+        String id = this.generateInsuranceID(type);
+        double premium = this.calculatePremium(type);
+        double coverage = this.calculateCoverageAmount(type);
+
+        System.out.println("Enter a beneficiary: ");
+        Scanner scanner = new Scanner(System.in);
+        String name = scanner.nextLine();
+
+        String response;
+        do{
+            Scanner responseScanner = new Scanner(System.in);
+            System.out.println("Are you sure you want to apply for this insurance? (yes/no)");
+            response = responseScanner.nextLine().trim().toLowerCase();
+            if ("yes".equals(response))
+            {
+                Insurance newinsurance = new Insurance(type, id, premium, coverage);
+                newinsurance.addBeneficiary(name); // Add the beneficiary to the new insurance object
+                System.out.println("Insurance successfully applied.");         
+                return newinsurance;
+            }
+            else if("no".equals(response))
+            {
+                System.out.println("Action cancelled");
+                return null;
+            }
+            else
+            {
+                System.out.println("Invalid input. Please type yes or no.");
+            }
+
+        }while(true);
+    }
 }

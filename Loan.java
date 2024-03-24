@@ -9,11 +9,11 @@ import java.time.LocalDate;
 */
 public class Loan{
 
-    public static final double MAX_LOAN_AMOUNT = 10000.0;
-    public static final double MIN_LOAN_AMOUNT = 100.0;
+    public static double MAX_LOAN_AMOUNT = 10000.0;
+    public static double MIN_LOAN_AMOUNT = 100.0;
 
     /**
-     * The status of the loan.
+     * The status of the loan. Default is "Active". Changes to "Paid Off" when remaining debt is 0.
      */
     private String loanStatus;
 
@@ -23,18 +23,17 @@ public class Loan{
     private int loanID;
 
     /**
-     * The type of loan.
+     * The type of loan. Current options are Personal, Student, Business, and Housing. Can be set to other types as well.
      */
     private String loanType;
 
     /**
-     * The principal amount of the loan.
+     * The principal amount of the loan. This amount will not change.
      */
     private double principalLoanAmount;
 
     /**
      * Initially set to loan amount, but adjusted when user pays more than the monthly payment.
-     * Used for default loan (i.e. non special loans like student loans, business loans, etc.)
      */
     private double monthlyMinPayment;
 
@@ -43,28 +42,29 @@ public class Loan{
      */
     private double remainingDebt;
     /**
-     * The annual interest rate of the loan, represented as a decimal (e.g., 0.05 for 5%).
+     * The annual interest rate of the loan. (e.g. 5.0 = 5.0% interest rate)
      */
     private double interestRate;
 
     /**
-     * The term of the loan in months.
+     * The term of the loan in months. (e.g. 12 for 1 year)
      */
     private int loanTerm;
 
     /**
-     * The date the loan was started.
+     * The date the loan was created. 
      */
     private LocalDate startDate;
 
     /**
-     * Constructs a new Loan with the specified account number, ID, amount, term and interest rate.
+     * Constructs a new Loan with the specified loan ID, loan Type, term, amount and interest rate.
      * <p>
      * The start date is set to the current date and time.
-     * The remaining debt and adjusted loan amount are both set to the initial loan amount.
+     * The monthly minimum payment is automatically calculated based on the loan amount, interest rate, and term.
+     * The remaining debt is set to the initial loan amount.
      *
-     * @param account the account tied to the new loan
      * @param loanID the ID of the new loan
+     * @param loanType the type of the new loan (e.g., Personal, Student, Business, Housing)
      * @param loanTerm the term of the new loan in months (e.g., 12 for 1 year)
      * @param principalLoanAmount the principal amount of the new loan (amount will not change)
      * @param interestRate the interest rate of the new loan
@@ -81,13 +81,48 @@ public class Loan{
         this.loanTerm = loanTerm;
     }
 
-    //Empty constructor for Loan
+    /**
+     * Empty constructor for Loan.
+     * Used when a Loan instance needs to be created without setting initial values.
+     */
     public Loan(){
 
     }
 
     /**
-     * Get the information of the loan including the loan ID, loan amount, interest rate, remaining loan, and monthly payment.
+     * Gets the maximum loan amount that can be loaned.
+     * @return The maximum loan amount that can be loaned.
+     */
+    public static double getMaxLoanAmount() {
+        return MAX_LOAN_AMOUNT;
+    }
+
+    /**
+     * Sets the maximum loan amount that can be loaned.
+     * @param maxLoanAmount
+     */
+    public static void setMaxLoanAmount(double maxLoanAmount) {
+        MAX_LOAN_AMOUNT = maxLoanAmount;
+    }
+
+    /**
+     * Gets the minimum loan amount that can be loaned.
+     * @return The minimum loan amount that can be loaned.
+     */
+    public static double getMinLoanAmount() {
+        return MIN_LOAN_AMOUNT;
+    }
+
+    /**
+     * Sets the minimum loan amount that can be loaned.
+     * @param minLoanAmount
+     */
+    public static void setMinLoanAmount(double minLoanAmount) {
+        MIN_LOAN_AMOUNT = minLoanAmount;
+    }
+
+    /**
+     * Get the information of the loan including status, loan ID, type, amount, term, interest rate, remaining loan, and minimum monthly payment.
      */
     public void getLoanInfo(){
         System.out.println("Loan Information");
@@ -161,9 +196,13 @@ public class Loan{
 
     /**
      * Sets the principal amount of this loan.
+     * Note: Principal amount cannot be negative.
      * @param amount
      */
     public void setPrincipalLoanAmount(double amount){
+        if (amount < 0) {
+            throw new IllegalArgumentException("Principal amount cannot be negative");
+        }
         this.principalLoanAmount = amount;
     }
 
@@ -177,9 +216,13 @@ public class Loan{
 
     /**
      * Sets the monthly minimum payment of this loan.
+     * Note: Monthly payment cannot be negative.
      * @param payment
      */
     public void setMonthlyMinPayment(double payment){
+        if (payment < 0) {
+            throw new IllegalArgumentException("Monthly payment cannot be negative");
+        }
         this.monthlyMinPayment = payment;
     }
     /**
@@ -192,9 +235,13 @@ public class Loan{
 
     /**
      * Sets the interest rate of this loan. (e.g. 5 = 5% interest rate)
+     * Note: Interest rate cannot be negative.
      * @param rate
      */
-    public void setInterestRate(double rate){
+    public void setInterestRate(double rate) {
+        if (rate < 0) {
+            throw new IllegalArgumentException("Interest rate cannot be negative");
+        }
         this.interestRate = rate;
     }
 
@@ -214,8 +261,15 @@ public class Loan{
         return this.remainingDebt;
     }
 
-    //Add to principalLoanAmount for each month that passes
+    /**
+     * Sets the remaining debt of this loan.
+     * Note: Remaining debt cannot be negative.
+     * @param debt
+     */
     public void setRemainingDebt(double debt){
+        if (debt < 0) {
+            throw new IllegalArgumentException("Remaining debt cannot be negative");
+        }
         this.remainingDebt = debt;
     }
 
@@ -227,6 +281,10 @@ public class Loan{
         return this.startDate;
     }
 
+    /**
+     * Sets the start date of this loan.
+     * @param date
+     */
     public void setStartDate(LocalDate date){
         this.startDate = date;
     }
@@ -291,7 +349,7 @@ public class Loan{
      * </pre>
      * This formula is based on the annuity formula, which calculates the amount that needs to be paid each month to fully repay the loan over the specified term, assuming the interest rate remains constant.
      *
-     * @return The monthly payment for this loan.
+     * @return The minimum monthly payment required for this loan.
      */
     public double calculateMonthlyPayment(){
 
@@ -320,7 +378,7 @@ public class Loan{
         Scanner newLoanScanner = new Scanner(System.in);
         
         while (true) {
-            System.out.println("Enter the amount to loan: ");
+            System.out.print("Enter the amount to loan: ");
             principalLoanAmount = newLoanScanner.nextDouble();
             if (principalLoanAmount > MAX_LOAN_AMOUNT) {
                 System.out.println("Loan amount exceeds maximum amount. Please try again.");
@@ -340,7 +398,8 @@ public class Loan{
             System.out.println("2. Student Loan");
             System.out.println("3. Business Loan");
             System.out.println("4. Housing Loan");
-
+            
+            System.out.print("Your choice: ");
             int chosenType = newLoanScanner.nextInt();
 
             switch (chosenType) {
@@ -375,6 +434,7 @@ public class Loan{
             System.out.println("3. 36 months, 3.5% interest rate");
             System.out.println("4. 48 months, 4.0% interest rate");
         
+            System.out.print("Your choice: ");
             int chosenTerm = newLoanScanner.nextInt();
         
             switch (chosenTerm) {
@@ -413,7 +473,7 @@ public class Loan{
         System.out.println("Loan Term: " + loanTerm + " months");
         System.out.println("Interest Rate: " + interestRate + "%");
         
-        System.out.println("Confirm loan application? (Y/N)");
+        System.out.print("Confirm loan application? (Y/N): ");
         String confirmLoan = newLoanScanner.next();
 
         while (!confirmLoan.equals("Y") && !confirmLoan.equals("N")) {
@@ -421,8 +481,6 @@ public class Loan{
             confirmLoan = newLoanScanner.next();
         }
         if (confirmLoan.equals("N")) {
-            System.out.println("Loan application cancelled");
-            newLoanScanner.close();
             return null;
         }
 
