@@ -2,7 +2,7 @@ import java.time.LocalDate;
 import java.util.Scanner;
 
 public class setting {
-
+    public static double MAX_BANK_TRANSFER_LIMIT = 8000.00;
     //Customer settings
     public void updateName(Customer customer, String name)
     {
@@ -64,8 +64,8 @@ public class setting {
                     System.out.println("Amount must be greater than 0. Please try again.");
                     continue; // This will loop back, allowing the user another chance to enter a valid amount
                 }
-                if (amount > 8000) {
-                    System.out.println("Limit cannot exceed 8000. Please approach a bank staff to change the limit.");
+                if (amount > MAX_BANK_TRANSFER_LIMIT) {
+                    System.out.println("Limit cannot exceed MAX_BANK_TRANSFER_LIMIT. Please approach a bank staff to change the limit.");
                     return -1; // Returning a sentinel value to indicate the operation should be aborted
                 }
                 return amount; // Valid amount entered within the accepted range
@@ -227,7 +227,7 @@ public class setting {
 
         }
     }
-    public void settingMenu(Customer customer, Account account) {
+    public void settingMenu(Customer customer) {
         Scanner scanner = new Scanner(System.in);
     
         while (true) {
@@ -244,6 +244,7 @@ public class setting {
                     customerSettingMenu(customer); // Call the method to handle customer settings
                     break;
                 case "2":
+                    Account account = customer.promptAccount(scanner);
                     accountSetting(account); // Call the method to handle account settings
                     break;
                 case "3":
