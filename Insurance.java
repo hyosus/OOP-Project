@@ -10,10 +10,9 @@ public class Insurance {
 
     /**
      * Defines the types of insurance available.
-     * Currently supported types are Life insurance, Medical insurance, and Travel insurance.
+     * Currently supported types are Life insurance, Medical insurance, Travel insurance, Car Insurance and Fire Insurance.
      */
-    
-    private static final String[] INSURANCE_TYPE_OPTIONS = {"Life", "Medical", "Travel"};
+    private static final String[] INSURANCE_TYPE_OPTIONS = {"Life", "Medical", "Travel","Car","Fire"};
     /** The unique identifier for the insurance policy. */
     private String insuranceID;
     /** The type of insurance policy. */
@@ -155,7 +154,11 @@ public class Insurance {
         int choice = -1;
         do{
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Choose Insurance Type: 1 for Life, 2 for Medical, 3 for Travel: ");
+            System.out.println("Choose your insurance type.");
+            for (int i = 1; i<=INSURANCE_TYPE_OPTIONS.length; i++)
+            {
+                System.out.println("Option" + i + ":" +INSURANCE_TYPE_OPTIONS[i-1]);
+            }
             try{
                 choice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e){
@@ -171,8 +174,14 @@ public class Insurance {
                 case 3:
                     this.insuranceType = INSURANCE_TYPE_OPTIONS[2];
                     break;
+                case 4:
+                    this.insuranceType = INSURANCE_TYPE_OPTIONS[3];
+                    break;
+                case 5:
+                    this.insuranceType = INSURANCE_TYPE_OPTIONS[4];
+                    break;
                 default:
-                    System.out.println("Invalid choice. Please select 1, 2 or 3.");
+                    System.out.println("Invalid choice. Please select 1, 2, 3, 4 or 5.");
                     choice = -1; 
                     
             }
@@ -199,6 +208,12 @@ public class Insurance {
                 break;
             case "Travel":
                 prefix = "TRA";
+                break;
+            case "Car":
+                prefix = "CAR";
+                break;
+            case "Fire":
+                prefix = "FIR";
                 break;
             default:
                 throw new IllegalStateException("Unknown insurance type: " + insuranceType);
@@ -276,6 +291,26 @@ public class Insurance {
                     premium += 20; // Adjust for ages 51+
                 }
                 break;
+            case "Car":
+                premium = 150.00;
+                if (age <= 21) {
+                    premium += 100; // Adjust for ages 0-21
+                } else if (age <= 50) {
+                    premium += 200; // Adjust for ages 22-50
+                } else {
+                    premium += 150; // Adjust for ages 51+
+                }
+                break;
+            case "Fire":
+                premium = 170.00;
+                if (age <= 21) {
+                    premium += 50; // Adjust for ages 0-21
+                } else if (age <= 50) {
+                    premium += 80; // Adjust for ages 22-50
+                } else {
+                    premium += 60; // Adjust for ages 51+
+                }
+                
         }
 
         return premium;        
@@ -300,6 +335,12 @@ public class Insurance {
                 break;
             case "Travel":
                 coverage = 2000.00;
+                break;
+            case "Car":
+                coverage = 3000.00;
+                break;
+            case "Fire":
+                coverage = 3500.00;
                 break;
         }
         return coverage;
