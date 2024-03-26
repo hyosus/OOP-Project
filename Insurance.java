@@ -12,16 +12,12 @@ public class Insurance {
      * Defines the types of insurance available.
      * Currently supported types are Life insurance, Medical insurance, and Travel insurance.
      */
-    public enum InsuranceType 
-    {
-    Life_insurance,
-    Medical_insurance,
-    Travel_insurance
-    }
+    
+    private static final String[] INSURANCE_TYPE_OPTIONS = {"Life", "Medical", "Travel"};
     /** The unique identifier for the insurance policy. */
     private String insuranceID;
     /** The type of insurance policy. */
-    private InsuranceType insuranceType;
+    private String insuranceType;
     /** The list of beneficiary names associated with the insurance policy. */
     private ArrayList<String> beneficiaryNames;
     /** The coverage amount provided by the insurance policy. */
@@ -37,7 +33,7 @@ public class Insurance {
      * @param premium The premium (cost) of the insurance. 
      * @param coverage The coverage amount of the insurance.
      */
-    public Insurance(InsuranceType type,String id,double premium, double coverage) {
+    public Insurance(String type,String id,double premium, double coverage) {
         this.insuranceType = type;
         this.insuranceID = id;
         this.coverageAmount = coverage;
@@ -70,14 +66,14 @@ public class Insurance {
      * Retrieves the insurance type.
      * @return The insurance type.
      */
-    public InsuranceType getInsuranceType() {
+    public String getInsuranceType() {
         return this.insuranceType;
     }
     /**
      * Sets the insurance type.
      * @param type The new insurance type.
      */
-    public void setInsuranceType(InsuranceType type) {
+    public void setInsuranceType(String type) {
         this.insuranceType = type;
     }
     /**
@@ -154,7 +150,7 @@ public class Insurance {
      *
      * @return The chosen InsuranceType.
      */
-    public InsuranceType chooseInsuranceType()
+    public String chooseInsuranceType()
     {
         int choice = -1;
         do{
@@ -167,13 +163,13 @@ public class Insurance {
             }
             switch (choice) {
                 case 1:
-                    this.insuranceType = InsuranceType.Life_insurance;
+                    this.insuranceType = INSURANCE_TYPE_OPTIONS[0];
                     break;
                 case 2:
-                    this.insuranceType = InsuranceType.Medical_insurance;
+                    this.insuranceType = INSURANCE_TYPE_OPTIONS[1];
                     break;
                 case 3:
-                    this.insuranceType = InsuranceType.Travel_insurance;
+                    this.insuranceType = INSURANCE_TYPE_OPTIONS[2];
                     break;
                 default:
                     System.out.println("Invalid choice. Please select 1, 2 or 3.");
@@ -181,6 +177,7 @@ public class Insurance {
                     
             }
         } while(choice == -1);
+        
         return this.insuranceType;
     }
 
@@ -191,16 +188,16 @@ public class Insurance {
      * @param insuranceType The type of insurance for which the ID is generated.
      * @return The generated insurance ID as a String.
      */
-    public String generateInsuranceID(InsuranceType insuranceType) {
+    public String generateInsuranceID(String insuranceType) {
         String prefix;
         switch (insuranceType) {
-            case Medical_insurance:
+            case "Medical":
                 prefix = "MED";
                 break;
-            case Life_insurance:
+            case "Life":
                 prefix = "LIF";
                 break;
-            case Travel_insurance:
+            case "Travel":
                 prefix = "TRA";
                 break;
             default:
@@ -223,7 +220,7 @@ public class Insurance {
      * @param insuranceType The type of insurance for which the premium is calculated.
      * @return The calculated premium amount.
      */
-    public double calculatePremium(InsuranceType insuranceType) {
+    public double calculatePremium(String insuranceType) {
         double premium = this.insurancePremium;
         Scanner scanner = new Scanner(System.in);
 
@@ -248,7 +245,7 @@ public class Insurance {
         }
 
         switch (insuranceType) {
-            case Medical_insurance:
+            case "Medical":
                 premium = 100.00;
                 if (age <= 21) {
                     premium += 50; // Adjust for ages 0-21
@@ -259,7 +256,7 @@ public class Insurance {
                 }
                 break;
         
-            case Life_insurance:
+            case "Life":
                 premium = 130.00;
                 if (age <= 21) {
                     premium += 30; 
@@ -269,7 +266,7 @@ public class Insurance {
                     premium += 70; 
                 }
                 break;
-            case Travel_insurance:
+            case "Travel":
                 premium = 40.00;
                 if (age <= 21) {
                     premium += 10; // Adjust for ages 0-21
@@ -291,17 +288,17 @@ public class Insurance {
      * @param insuranceType The type of insurance for which the coverage amount is calculated.
      * @return The calculated coverage amount.
      */
-    public double calculateCoverageAmount(InsuranceType insuranceType) {
+    public double calculateCoverageAmount(String insuranceType) {
         double coverage = this.coverageAmount;
         switch(insuranceType)
         {
-            case Medical_insurance:
+            case "Medical":
                 coverage = 5000.00;
                 break;
-            case Life_insurance:
+            case "Life":
                 coverage = 7000.00;
                 break;
-            case Travel_insurance:
+            case "Travel":
                 coverage = 2000.00;
                 break;
         }
@@ -507,7 +504,7 @@ public class Insurance {
     *         cancels the creation process.
     */
     public Insurance createInsurance() {
-        InsuranceType type = this.chooseInsuranceType();
+        String type = this.chooseInsuranceType();
         String id = this.generateInsuranceID(type);
         double premium = this.calculatePremium(type);
         double coverage = this.calculateCoverageAmount(type);
