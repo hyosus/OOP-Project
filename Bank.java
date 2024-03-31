@@ -11,6 +11,7 @@ public class Bank {
     private String name;
     final static String CSV_FILE = "customers.csv";
     final static String LOAN_FILE = "Loans.csv";
+    final static String INSURANCE_FILE = "Insurance.csv";
     
     public Bank(String name) {
         this.name = name;
@@ -248,6 +249,7 @@ public class Bank {
                 customer.loadAccounts(CSV_FILE, customer.getCustomerID());
                 for (Account account : customer.getAccounts()) {
                     account.loadLoans(LOAN_FILE, account.getAccountID());
+                    account.loadInsurance(INSURANCE_FILE, account.getAccountID());
                 }
                 System.out.println("Login successful!");
                 //scanner.close();
@@ -289,16 +291,17 @@ public class Bank {
             System.out.println("1. View account(s) info");
             System.out.println("2. View Branch info");
             System.out.println("3. View Insurance info");
-            System.out.println("4. View Loan info");
-            System.out.println("5. Take Loan");
-            System.out.println("6. Deposit");
-            System.out.println("7. Withdraw");
-            System.out.println("8. Transfer");
-            System.out.println("9. Currency Exchange");
-            System.out.println("10. Credit Card");
-            System.out.println("11. Create New Account");
-            System.out.println("12. Settings");
-            System.out.println("13. Logout");
+            System.out.println("4. Apply Insurance");
+            System.out.println("5. View Loan info");
+            System.out.println("6. Take Loan");
+            System.out.println("7. Deposit");
+            System.out.println("8. Withdraw");
+            System.out.println("9. Transfer");
+            System.out.println("10. Currency Exchange");
+            System.out.println("11. Credit Card");
+            System.out.println("12. Create New Account");
+            System.out.println("13. Settings");
+            System.out.println("14. Logout");
             
             System.out.print("Your choice: ");
             int choice = loginScanner.nextInt();
@@ -313,42 +316,49 @@ public class Bank {
                     break;
                 case 3:
                     // View Insurance info
+                    Account viewInsuranceChoice = customer.promptAccount(loginScanner);
+                    viewInsuranceChoice.displayInsurance();
                     break;
                 case 4:
+                    // Apply Insurance
+                    Account insuranceChoice = customer.promptAccount(loginScanner);
+                    insuranceChoice.createInsurance(INSURANCE_FILE);
+                    break;
+                case 5:
                     // View Loan info
                     Account viewLoanChoice = customer.promptAccount(loginScanner);
                     viewLoanChoice.displayLoans();
                     //To Do: Add option to pay loan
                     break;
-                case 5: 
+                case 6: 
                     // Take Loan
                     Account loanChoice = customer.promptAccount(loginScanner);
                     loanChoice.createLoan(LOAN_FILE);
                     break;
-                case 6: // Deposit
+                case 7: // Deposit
                     Account depositChoice = customer.promptAccount(loginScanner);
                     Account.depositToAccount(loginScanner, depositChoice);
                     break;
-                case 7: // Withdraw
+                case 8: // Withdraw
                     Account withdrawChoice = customer.promptAccount(loginScanner);
                     Account.withdrawFromAccount(loginScanner, withdrawChoice);
                     break;
-                case 8:
+                case 9:
                     // Transfer
                     break;
-                case 9:
+                case 10:
                     // Currency Exchange
                     break;
-                case 10:
+                case 11:
                     // Credit Card
                     break;
-                case 11:
+                case 12:
                     Account.createNewAccount(loginScanner, customer);
                     break;
-                case 12:
+                case 13:
                     // Settings
                     break;
-                case 13:
+                case 14:
                     System.out.println("Exiting...");
                     loginScanner.close();
                     System.exit(0);

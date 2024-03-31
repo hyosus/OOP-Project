@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Account {
    //private int transactionID;
@@ -23,7 +25,8 @@ public class Account {
    private Customer customer;
    private double withdrawlLimit;
    private List<Loan> loanList;
-
+   private List<Insurance> insuranceList;
+   
    // public Account(String accountID, String accountType, Customer customer){
    //    // this.transactionID = TID;
    //    this.transferLimit = 3000;
@@ -46,6 +49,7 @@ public class Account {
       this.balance = balance;
       this.accountID = accountID;
       this.loanList = new ArrayList<>();
+      this.insuranceList = new ArrayList<>();
       //allAccounts.add(this);
    }
 
@@ -145,6 +149,35 @@ public class Account {
          System.out.println("An error occurred while writing to the CSV file.");
          e.printStackTrace();
      }
+   }
+
+   public void createInsurance(String csvFile)
+   {
+      Insurance insuranceInstance = new Insurance();
+      Insurance newInsurance = insuranceInstance.createInsurance();
+
+      if (newInsurance == null) {
+         System.out.println("Insurance application cancelled.");
+         return;
+      }
+
+      try (FileWriter writer = new FileWriter(csvFile, true)) {
+         writer.append(this.accountID).append(',');
+         writer.append(newInsurance.getInsuranceID()).append(',');
+         writer.append(newInsurance.getInsuranceType()).append(',');
+         writer.append(String.valueOf(newInsurance.getInsurancePremium())).append(',');
+         writer.append(String.valueOf(newInsurance.getCoverageAmount())).append(',');
+         for (String name: newInsurance.getBeneficiaryNames()) {
+            writer.append(name).append(',');
+         }
+         
+
+      } catch (IOException e) {
+         System.out.println("An error occurred while writing to the CSV file.");
+         e.printStackTrace();
+      }
+         
+
    }
    
    public void deposit(double amount){
@@ -353,6 +386,46 @@ public class Account {
          loan.getLoanInfo();
       }
    }
+
+   public void loadInsurance(String filename, String accountID) {
+      try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+         String line;
+         while ((line = reader.readLine()) != null) {
+            String[] data = line.split(",");
+            if (data[0].equals(accountID)) {
+               String insuranceID = (data[1]);
+               String insuranceType = (data[2]);
+               double insurancePremium = Double.parseDouble(data[3]);
+               double coverageAmount = Double.parseDouble(data[4]);
+               ArrayList<String> beneficiaryNames = new ArrayList<>();
+               for (int i = 5; i < data.length; i++) {
+                  beneficiaryNames.add(data[i]);
+               }
+               Insurance insurance = new Insurance(insuranceID, insuranceType, insurancePremium, coverageAmount);
+               insurance.setBeneficiaryNames(beneficiaryNames);
+            }
+         }
+      } catch (IOException e) {
+         // Handle exception
+      }
+   }
+
+   public void displayInsurance() {
+      if (insuranceList.isEmpty()) {
+         System.out.println("No insurance available.");
+         return;
+      }
+
+      System.out.println("Number of insurance: " + insuranceList.size());
+      
+      for (Insurance insurance : insuranceList) {
+         insurance.displayInsuranceDetails();
+      }
+   }
+
+
+
+
 
    public void displayTransactionInfo(){
 
