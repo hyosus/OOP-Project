@@ -170,12 +170,15 @@ public class Account {
          for (String name: newInsurance.getBeneficiaryNames()) {
             writer.append(name).append(',');
          }
+         writer.append('\n');
+         
          
 
       } catch (IOException e) {
          System.out.println("An error occurred while writing to the CSV file.");
          e.printStackTrace();
       }
+      this.insuranceList.add(newInsurance);
          
 
    }
@@ -403,11 +406,13 @@ public class Account {
                }
                Insurance insurance = new Insurance(insuranceID, insuranceType, insurancePremium, coverageAmount);
                insurance.setBeneficiaryNames(beneficiaryNames);
+               this.insuranceList.add(insurance);
             }
          }
       } catch (IOException e) {
          // Handle exception
       }
+      
    }
 
    public void displayInsurance() {
