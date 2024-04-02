@@ -4,7 +4,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class Bank {
@@ -12,34 +14,36 @@ public class Bank {
     final static String CSV_FILE = "customers.csv";
     final static String LOAN_FILE = "Loans.csv";
     final static String INSURANCE_FILE = "Insurance.csv";
-    
+    private ArrayList<Branch> branches;
+
     public Bank(String name) {
         this.name = name;
+        this.branches = new ArrayList<>();
     }
 
     // Adds an account to the bank.
     // public void createAccount(Account account) {
-    //     accounts.add(account);
-    //     totalAccounts++;
+    // accounts.add(account);
+    // totalAccounts++;
     // }
 
     // Processes bank-wide transactions.
     // public void processTransactions() {
-    //     for (Account account : accounts) {
-    //         double interestRate = 0.02; // Example interest rate
-    //         double balance = account.getBalance();
-    //         double interest = balance * interestRate;
-    //         account.deposit(interest); // Add interest to the account balance
-    //     System.out.println("Processing transactions in " + name + " bank.");
-    //     }
+    // for (Account account : accounts) {
+    // double interestRate = 0.02; // Example interest rate
+    // double balance = account.getBalance();
+    // double interest = balance * interestRate;
+    // account.deposit(interest); // Add interest to the account balance
+    // System.out.println("Processing transactions in " + name + " bank.");
+    // }
     // }
 
     // Displays information about all accounts in the bank.
     // public void displayAccounts() {
-    //     System.out.println("Accounts in " + name + " bank:");
-    //     for (Account account : accounts) {
-    //         System.out.println(account);
-    //     }
+    // System.out.println("Accounts in " + name + " bank:");
+    // for (Account account : accounts) {
+    // System.out.println(account);
+    // }
     // }
 
     // Gets the name of the bank.
@@ -80,9 +84,9 @@ public class Bank {
     }
 
     public static boolean signup() {
-    
+
         Scanner scanner = new Scanner(System.in);
-        //String accountType;
+        // String accountType;
         String name;
         String nric;
         LocalDate dob;
@@ -90,7 +94,7 @@ public class Bank {
         String email;
         String address;
         while (true) {
-            //check username and password
+            // check username and password
             System.out.println("Enter username and password to create an customer profile (type 'exit' to finish):");
             String username;
             do {
@@ -98,11 +102,9 @@ public class Bank {
                 username = scanner.nextLine();
                 if (usernameExistsInCsv(username)) {
                     System.out.println("Username already exists. Please choose another username.");
-                }
-                else if (username.isEmpty()) {
+                } else if (username.isEmpty()) {
                     System.out.println("Username cannot be empty. Please enter a username.");
-                }
-                else if (username.equalsIgnoreCase("exit") || username.equalsIgnoreCase("no")) {
+                } else if (username.equalsIgnoreCase("exit") || username.equalsIgnoreCase("no")) {
                     System.out.println("Sign up cancelled.");
                     return false;
                 }
@@ -115,7 +117,7 @@ public class Bank {
                     System.out.println("Password cannot be empty. Please enter a password.");
                 }
             } while (password.isEmpty());
-            //check customer details
+            // check customer details
             System.out.print("Enter your name: ");
             do {
                 name = scanner.nextLine();
@@ -123,7 +125,7 @@ public class Bank {
                     System.out.print("Name cannot be empty. Please enter again:");
                 }
             } while (name.isEmpty());
-            
+
             System.out.print("Enter your NRIC: ");
             do {
                 nric = scanner.nextLine();
@@ -131,7 +133,7 @@ public class Bank {
                     System.out.print("NRIC cannot be empty. Please enter again:");
                 }
             } while (nric.isEmpty());
-            
+
             while (true) {
                 System.out.print("Enter your date of birth (YYYY-MM-DD): ");
                 try {
@@ -141,7 +143,7 @@ public class Bank {
                     System.out.println("Invalid date format. Please enter the date in the format YYYY-MM-DD.");
                 }
             }
-            
+
             while (true) {
                 System.out.print("Enter your contact number: ");
                 try {
@@ -153,7 +155,7 @@ public class Bank {
                     scanner.nextLine(); // consume newline
                 }
             }
-            
+
             System.out.print("Enter your email: ");
             do {
                 email = scanner.nextLine();
@@ -161,7 +163,7 @@ public class Bank {
                     System.out.print("Email cannot be empty. Please enter again:");
                 }
             } while (email.isEmpty());
-            
+
             System.out.print("Enter your address: ");
             do {
                 address = scanner.nextLine();
@@ -172,21 +174,22 @@ public class Bank {
 
             try (FileWriter writer = new FileWriter(CSV_FILE, true)) {
                 String customerID = Customer.generateRandomCustomerID(); // generate random customer ID
-                String defaultAccountNumber = Account.generateRandomDefaultAccountID(); // generate random account number
+                String defaultAccountNumber = Account.generateRandomDefaultAccountID(); // generate random account
+                                                                                        // number
                 String accountBalance = "0"; // initial account balance
-            
+
                 writer.append(customerID).append(",")
-                      .append(username).append(",")
-                      .append(password).append(",")
-                      .append(name).append(",")
-                      .append(nric).append(",")
-                      .append(dob.toString()).append(",")
-                      .append(String.valueOf(contactNumber)).append(",")
-                      .append(email).append(",")
-                      .append(address).append(",")
-                      .append(defaultAccountNumber).append(",")
-                      .append(accountBalance)
-                      .append("\n"); // go to next line for next customer
+                        .append(username).append(",")
+                        .append(password).append(",")
+                        .append(name).append(",")
+                        .append(nric).append(",")
+                        .append(dob.toString()).append(",")
+                        .append(String.valueOf(contactNumber)).append(",")
+                        .append(email).append(",")
+                        .append(address).append(",")
+                        .append(defaultAccountNumber).append(",")
+                        .append(accountBalance)
+                        .append("\n"); // go to next line for next customer
                 writer.close();
             } catch (IOException e) {
                 System.err.println("Error writing to CSV file: " + e.getMessage());
@@ -199,36 +202,38 @@ public class Bank {
     }
 
     // public static boolean login() {
-    //     final String CSV_FILE = "customers.csv";
-    //     Scanner scanner = new Scanner(System.in);
-    
-    //     while (true) {
-    //         System.out.println("Enter your username and password to log in, or type 'exit' to return to the main menu:");
-    //         System.out.print("Username: ");
-    //         String username = scanner.nextLine();
-    
-    //         if (username.equalsIgnoreCase("exit")) {
-    //             return false;
-    //         }
-    
-    //         System.out.print("Password: ");
-    //         String password = scanner.nextLine();
-    
-    //         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
-    //             String line;
-    //             while ((line = reader.readLine()) != null) {
-    //                 String[] parts = line.split(",");
-    //                 if (parts.length >= 3 && parts[1].equals(username) && parts[2].equals(password)) {
-    //                     System.out.println("Login successful!");
-    //                     return true;
-    //                 }
-    //             }
-    //         } catch (IOException e) {
-    //             System.err.println("Error reading from CSV file: " + e.getMessage());
-    //         }
-    
-    //         System.out.println("Incorrect username or password. Please try again.");
-    //     }
+    // final String CSV_FILE = "customers.csv";
+    // Scanner scanner = new Scanner(System.in);
+
+    // while (true) {
+    // System.out.println("Enter your username and password to log in, or type
+    // 'exit' to return to the main menu:");
+    // System.out.print("Username: ");
+    // String username = scanner.nextLine();
+
+    // if (username.equalsIgnoreCase("exit")) {
+    // return false;
+    // }
+
+    // System.out.print("Password: ");
+    // String password = scanner.nextLine();
+
+    // try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+    // String line;
+    // while ((line = reader.readLine()) != null) {
+    // String[] parts = line.split(",");
+    // if (parts.length >= 3 && parts[1].equals(username) &&
+    // parts[2].equals(password)) {
+    // System.out.println("Login successful!");
+    // return true;
+    // }
+    // }
+    // } catch (IOException e) {
+    // System.err.println("Error reading from CSV file: " + e.getMessage());
+    // }
+
+    // System.out.println("Incorrect username or password. Please try again.");
+    // }
     // }
 
     public static Customer login() {
@@ -244,7 +249,7 @@ public class Bank {
             String password = scanner.nextLine();
 
             Customer customer = Customer.loadCustomerByUsernameAndPassword(username, password, CSV_FILE);
-            
+
             if (customer != null) {
                 customer.loadAccounts(CSV_FILE, customer.getCustomerID());
                 for (Account account : customer.getAccounts()) {
@@ -252,7 +257,7 @@ public class Bank {
                     account.loadInsurance(INSURANCE_FILE, account.getAccountID());
                 }
                 System.out.println("Login successful!");
-                //scanner.close();
+                // scanner.close();
                 return customer;
             } else {
                 System.out.println("Incorrect username or password. Please try again.");
@@ -260,28 +265,30 @@ public class Bank {
         }
     }
 
-    /*public static String showAccountTypeMenu() {
-        Scanner chooseAccountScanner = new Scanner(System.in);
-
-        while (true) {
-            System.out.println("Choose account type: 1. Savings, 2. Fixed Deposit");
-            System.out.print("Your choice: ");
-            int accountTypeChoice = chooseAccountScanner.nextInt();
-
-            switch (accountTypeChoice) {
-                case 1:
-                    chooseAccountScanner.close();
-                    return "Saving";
-
-                case 2:
-                    chooseAccountScanner.close();
-                    return "Fixed Deposit";
-
-                default:
-                    System.out.println("Invalid Choice. Please choose a valid option.");
-            }
-        }
-    }*/
+    /*
+     * public static String showAccountTypeMenu() {
+     * Scanner chooseAccountScanner = new Scanner(System.in);
+     * 
+     * while (true) {
+     * System.out.println("Choose account type: 1. Savings, 2. Fixed Deposit");
+     * System.out.print("Your choice: ");
+     * int accountTypeChoice = chooseAccountScanner.nextInt();
+     * 
+     * switch (accountTypeChoice) {
+     * case 1:
+     * chooseAccountScanner.close();
+     * return "Saving";
+     * 
+     * case 2:
+     * chooseAccountScanner.close();
+     * return "Fixed Deposit";
+     * 
+     * default:
+     * System.out.println("Invalid Choice. Please choose a valid option.");
+     * }
+     * }
+     * }
+     */
 
     public static void showLoginMenu(Customer customer) {
         Scanner loginScanner = new Scanner(System.in);
@@ -302,7 +309,7 @@ public class Bank {
             System.out.println("12. Create New Account");
             System.out.println("13. Settings");
             System.out.println("14. Logout");
-            
+
             System.out.print("Your choice: ");
             int choice = loginScanner.nextInt();
             loginScanner.nextLine();
@@ -328,9 +335,9 @@ public class Bank {
                     // View Loan info
                     Account viewLoanChoice = customer.promptAccount(loginScanner);
                     viewLoanChoice.displayLoans();
-                    //To Do: Add option to pay loan
+                    // To Do: Add option to pay loan
                     break;
-                case 6: 
+                case 6:
                     // Take Loan
                     Account loanChoice = customer.promptAccount(loginScanner);
                     loanChoice.createLoan(LOAN_FILE);
@@ -368,32 +375,72 @@ public class Bank {
         }
     }
 
+    // Method to add a branch to the list
+    public void addBranch(String bid, boolean isOverseas, String country, String bname, String address,
+            int hp, int atmAvail) {
+        Branch branch = new Branch(bid, isOverseas, country, bname, address, hp, atmAvail);
+        branches.add(branch);
+    }
+
+    // Getter method for branches
+    public List<Branch> getBranches() {
+        return branches;
+    }
+
+    // Method to get a branch by its ID
+    public Branch getBranchById(String bId) {
+        for (Branch branch : branches) {
+            if (branch.getBranchId().equals(bId)) {
+                return branch;
+            }
+        }
+        return null; // Or throw an exception if needed
+    }
+
     public static void main(String[] args) {
         Scanner mainscanner = new Scanner(System.in);
         Bank bank = new Bank(null);
-    
+
+        // ================== TEST BRANCH ==================
+        bank.addBranch("123", false, "Singapore", "Clementi Branch", "13 Clementi", 88889999, 5);
+        bank.addBranch("223", true, "Malaysia", "Sentra Branch", "45 Sentra", 12312323, 3);
+
+        // Access a specific branch by ID
+        Branch sgBranch = bank.getBranchById("123");
+        Branch myBranch = bank.getBranchById("223");
+
+        sgBranch.generateQueueNumber(true, 1);
+        sgBranch.generateQueueNumber(true, 2);
+
+        myBranch.generateQueueNumber(false, 1);
+        myBranch.generateQueueNumber(true, 4);
+
+        sgBranch.displayQueue();
+        myBranch.displayQueue();
+        // ====================== END ======================
+
         while (true) {
             System.out.println("Choose an option:\n1. Sign up\n2. Log In\n3. Exit");
             System.out.print("Your choice: ");
-    
+
             int choice = mainscanner.nextInt();
             mainscanner.nextLine(); // consume newline
-    
+
             switch (choice) {
                 case 1: // Sign up
                     signup();
                     break;
-    
+
                 case 2: // Log in
-                    {
-                        showLoginMenu(login());
-                    }
+                {
+                    showLoginMenu(login());
+                }
                     break;
                 case 3: // Exit
                     System.out.println("Exiting...");
                     mainscanner.close();
                     System.exit(0);
-    
+
                 default:
                     System.out.println("Invalid choice. Please choose a valid option.");
             }
@@ -444,15 +491,15 @@ public class Bank {
             }
         }
     }
-    
+
     // Authentication method (replace w authentication logic)
     // private static Customer authenticateCustomer(int customerID) {
-    //     for (Account account : bank.getAccounts()) {
-    //         Customer customer = account.getCustomer();
-    //         if (customer != null && customer.getCustomerID() == customerID) {
-    //             return customer;
-    //         }
-    //     }
-    //     return null; // Customer not found
+    // for (Account account : bank.getAccounts()) {
+    // Customer customer = account.getCustomer();
+    // if (customer != null && customer.getCustomerID() == customerID) {
+    // return customer;
+    // }
+    // }
+    // return null; // Customer not found
     // }
 }
