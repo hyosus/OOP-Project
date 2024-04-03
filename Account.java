@@ -1,506 +1,479 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.lang.NumberFormatException;
+import java.util.regex.Pattern;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Account {
-   //private int transactionID;
-   private String accountType;
-   private String accountID;
-   private double balance;
-   private double transferLimit;
-   private Customer customer;
-   private double withdrawlLimit;
-   private List<Loan> loanList;
-   private List<Insurance> insuranceList;
-   
-   // public Account(String accountID, String accountType, Customer customer){
-   //    // this.transactionID = TID;
-   //    this.transferLimit = 3000;
-   //    this.accountType = accountType;
-   //    this.withdrawlLimit = 3000;
-   //    this.balance = 0;
-   //    this.accountID = accountID;
-   //    this.customer = customer;
+public class Bank {
+    private String name;
+    final static String CSV_FILE = "customers.csv";
+    final static String LOAN_FILE = "Loans.csv";
 
-   // }
+    public Bank(String name) {
+        this.name = name;
+    }
 
-   // static list to hold all accounts
-   //private static List<Account> allAccounts = new ArrayList<>();
-   
-   public Account(String accountID, String accountType, double balance){
-      // this.transactionID = TID;
-      this.transferLimit = 3000;
-      this.accountType = accountType;
-      this.withdrawlLimit = 3000;
-      this.balance = balance;
-      this.accountID = accountID;
-      this.loanList = new ArrayList<>();
-      this.insuranceList = new ArrayList<>();
-      //allAccounts.add(this);
-   }
+    // Adds an account to the bank.
+    // public void createAccount(Account account) {
+    //     accounts.add(account);
+    //     totalAccounts++;
+    // }
 
-   public static String generateRandomDefaultAccountID() {
-      String id;
-      do {
-         Random rand = new Random();
-         int fiveDigitNumber = 10000 + rand.nextInt(90000);
-         id = "A" + Integer.toString(fiveDigitNumber);
-      } while (Bank.idExistsInCsv(id));
-      return id;
-   }
+    // Processes bank-wide transactions.
+    // public void processTransactions() {
+    //     for (Account account : accounts) {
+    //         double interestRate = 0.02; // Example interest rate
+    //         double balance = account.getBalance();
+    //         double interest = balance * interestRate;
+    //         account.deposit(interest); // Add interest to the account balance
+    //     System.out.println("Processing transactions in " + name + " bank.");
+    //     }
+    // }
 
-   public static String generateRandomNewAccountID(String accountType) {
-      String prefix = "";
-      switch (accountType) {
-         case "Savings":
-            prefix = "S";
+    // Displays information about all accounts in the bank.
+    // public void displayAccounts() {
+    //     System.out.println("Accounts in " + name + " bank:");
+    //     for (Account account : accounts) {
+    //         System.out.println(account);
+    //     }
+    // }
+
+    // Gets the name of the bank.
+    public String getName() {
+        return name;
+    }
+
+    public static boolean idExistsInCsv(String id) {
+        final String CSV_FILE = "customers.csv";
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 1 && parts[0].equals(id)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            ExceptionHandling.handleIOException(e);
+        }
+        return false;
+    }
+
+    private static boolean usernameExistsInCsv(String username) {
+        final String CSV_FILE = "customers.csv";
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 2 && parts[1].equals(username)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            ExceptionHandling.handleIOException(e);
+        }
+        return false;
+    }
+
+    // private static String promptForInput(Scanner scanner, String promptMessage) {
+    //     String input;
+    //     do {
+    //         System.out.print(promptMessage);
+    //         input = scanner.nextLine();
+    //         if (isEmpty(input)) {
+    //             System.out.println("Input cannot be empty. Please enter again.");
+    //         }
+    //     } while (isEmpty(input));
+    //     return input;
+    // }
+
+    // Prompt for input and handle empty input
+    private static String promptForInput(Scanner scanner, String promptMessage, String fieldName) {
+        String input;
+        do {
+            System.out.print(promptMessage);
+            input = scanner.nextLine();
+            if (isEmpty(input)) {
+                ExceptionHandling.handleEmptyInputException(fieldName);
+            }
+        } while (isEmpty(input));
+        return input;
+    }
+
+
+
+
+    // Method to check if a string is empty or not
+    private static boolean isEmpty(String input) {
+        return input == null || input.trim().isEmpty();
+    }
+
+    public static boolean signup() {
+
+        Scanner scanner = new Scanner(System.in);
+        //String accountType;
+        String name;
+        String nric;
+        LocalDate dob;
+        int contactNumber;
+        String email;
+        String address;
+
+        while (true) {
+            //check username and password
+            System.out.println("Enter username and password to create an customer profile (type 'exit' to finish):");
+            String username = promptForInput(scanner, "Enter your username: ", "Username");
+            if (username.equalsIgnoreCase("exit") || username.equalsIgnoreCase("no")) {
+                System.out.println("Sign up cancelled.");
+                return false;
+            } else if (usernameExistsInCsv(username)) {
+                System.out.println("Username already exists. Please choose another username.");
+                continue; // Reprompt for username
+            }
+
+            String password = promptForInput(scanner, "Enter your password: ", "Password");
+
+            //check customer details
+            name = promptForInput(scanner, "Enter your name: ", "Name");
+
+            // NRIC Validation
+            while (true) {
+                nric = promptForInput(scanner, "Enter your NRIC: ", "NRIC");
+                if (ExceptionHandling.handleNric(nric)) {
+                    break; // Exit the loop if NRIC is valid
+                }
+            }
+
+            while (true) {
+                System.out.print("Enter your date of birth (YYYY-MM-DD): ");
+                try {
+                    dob = LocalDate.parse(scanner.nextLine());
+
+                    // Ensure dob is not in the future
+                    if (dob.isAfter(LocalDate.now())) {
+                        System.out.println("Date of birth cannot be in the future. Please re-enter a valid date.");
+                        continue; // Prompt to enter the dob again
+                    }
+                    break; // exit the loop if the input was valid
+                } catch (DateTimeParseException e) {
+                    ExceptionHandling.handleDateTimeParseException();
+                }
+            }
+
+            // Prompt and validate contact number
+            while (true) {
+                String contactNumberStr = promptForInput(scanner, "Enter your contact number: ", "Contact number");
+                if (contactNumberStr.matches("[89]\\d{7}")) {
+                    try {
+                        contactNumber = Integer.parseInt(contactNumberStr);
+                        break; // exit the loop if the input was valid
+                    } catch (NumberFormatException e) {
+                        ExceptionHandling.handleNumberFormatException();
+                    }
+                } else {
+                    System.out.println("Contact number should start with either 8 or 9 and contain exactly 8 digits. Please try again.");
+                }
+            }
+
+            // Prompt and validate email
+            while (true) {
+                email = promptForInput(scanner, "Enter your email: ", "Email");
+                if (ExceptionHandling.handleEmail(email)) {
+                    break; // Exit the loop if email is valid
+                }
+            }
+
+
+            address = promptForInput(scanner, "Enter your address: ", "Address");
+
+            try (FileWriter writer = new FileWriter(CSV_FILE, true)) {
+                String customerID = Customer.generateRandomCustomerID(); // generate random customer ID
+                String defaultAccountNumber = Account.generateRandomDefaultAccountID(); // generate random account number
+                String accountBalance = "0"; // initial account balance
+
+                writer.append(customerID).append(",")
+                        .append(username).append(",")
+                        .append(password).append(",")
+                        .append(name).append(",")
+                        .append(nric).append(",")
+                        .append(dob.toString()).append(",")
+                        .append(String.valueOf(contactNumber)).append(",")
+                        .append(email).append(",")
+                        .append(address).append(",")
+                        .append(defaultAccountNumber).append(",")
+                        .append(accountBalance)
+                        .append("\n"); // go to next line for next customer
+                writer.close();
+            } catch (IOException e) {
+                ExceptionHandling.handleIOException(e);
+            }
+
+            System.out.println("Customer profile created successfully.");
             break;
-         case "Investment":
-            prefix = "J";
-            break;
-      }
+        }
+        return true; // Return true if the user successfully signs up
+    }
 
-      Random random = new Random();
-      String newAccountID;
-      do {
-          int fiveDigitNumber = 10000 + random.nextInt(90000); // Generate a random 6-digit number
-         newAccountID = prefix + fiveDigitNumber;
-   } while (Bank.idExistsInCsv(newAccountID)); // Keep generating a new account ID until it doesn't exist in the CSV file
+    // public static boolean login() {
+    //     final String CSV_FILE = "customers.csv";
+    //     Scanner scanner = new Scanner(System.in);
 
-   return newAccountID;
-}
+    //     while (true) {
+    //         System.out.println("Enter your username and password to log in, or type 'exit' to return to the main menu:");
+    //         System.out.print("Username: ");
+    //         String username = scanner.nextLine();
 
+    //         if (username.equalsIgnoreCase("exit")) {
+    //             return false;
+    //         }
 
+    //         System.out.print("Password: ");
+    //         String password = scanner.nextLine();
 
-   public static void createNewAccount(Scanner scanner, Customer customer) {
-      System.out.println("Select the type of account to create:");
-      System.out.println("1. Savings");
-      System.out.println("2. Investment");
+    //         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+    //             String line;
+    //             while ((line = reader.readLine()) != null) {
+    //                 String[] parts = line.split(",");
+    //                 if (parts.length >= 3 && parts[1].equals(username) && parts[2].equals(password)) {
+    //                     System.out.println("Login successful!");
+    //                     return true;
+    //                 }
+    //             }
+    //         } catch (IOException e) {
+    //             System.err.println("Error reading from CSV file: " + e.getMessage());
+    //         }
 
-      int accountTypeIndex;
-      while (true) {
-         System.out.print("Enter the number of the account type: ");
-         accountTypeIndex = scanner.nextInt();
-         scanner.nextLine(); // Consume the newline character
-         if (accountTypeIndex == 1 || accountTypeIndex == 2) {
-            break;
-         } else {
-            System.out.println("Invalid choice. Please choose a valid option.");
-         }
-   }
+    //         System.out.println("Incorrect username or password. Please try again.");
+    //     }
+    // }
 
-      String accountType = accountTypeIndex == 1 ? "Savings" : "Investment";
-      
-      
-  
-      if (customer.hasAccountType(accountType)) {
-          System.out.println("You already have a " + accountType + " account.");
-      } else {
-          String accountID = generateRandomNewAccountID(accountType); // Generate a new account ID
-          Account newAccount = new Account(accountID, accountType, 0);
-          customer.getAccounts().add(newAccount);
-          System.out.println("Created a new " + accountType + " account with ID " + accountID);
-          newAccount.updateCsvWithNewAccount(customer.getCustomerID(), accountType, accountID, 0);
-          
-      }
-  }
-  
+    public static Customer login() {
+        final String CSV_FILE = "customers.csv";
+        Scanner scanner = new Scanner(System.in);
 
-  public void createLoan(String csvFile) {
-      Random randomNo = new Random();
-      int loanID = randomNo.nextInt(100000);
-      Loan loanInstance = new Loan();
-      Loan newLoan = loanInstance.newLoan(loanID);
+        while (true) {
+            System.out.println("Enter your username and password to log in");
+            System.out.print("Username: ");
+            String username = scanner.nextLine();
 
-      if (newLoan == null) {
-         System.out.println("Loan application cancelled.");
-         return;
-      }
+            System.out.print("Password: ");
+            String password = scanner.nextLine();
 
-      // Add the new loan to the loan list
-      this.loanList.add(newLoan);
+            Customer customer = Customer.loadCustomerByUsernameAndPassword(username, password, CSV_FILE);
 
-      // Write the new loan to the CSV file
-      try (FileWriter writer = new FileWriter(csvFile, true)) {
-         writer.append(this.accountID).append(',');
-         writer.append(newLoan.getloanStatus()).append(',');
-         writer.append(Integer.toString(loanID)).append(',');
-         writer.append(newLoan.getLoanType()).append(',');
-         writer.append(Integer.toString(newLoan.getLoanTerm())).append(',');
-         writer.append(Double.toString(newLoan.getPrincipalLoanAmount())).append(',');
-         writer.append(Double.toString(newLoan.getInterestRate())).append(',');
-         writer.append(Double.toString(newLoan.getRemainingDebt())).append(',');
-         writer.append(newLoan.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))).append('\n');
-     } catch (IOException e) {
-         System.out.println("An error occurred while writing to the CSV file.");
-         e.printStackTrace();
-     }
-   }
-
-   public void createInsurance(String csvFile)
-   {
-      Insurance insuranceInstance = new Insurance();
-      Insurance newInsurance = insuranceInstance.createInsurance();
-
-      if (newInsurance == null) {
-         System.out.println("Insurance application cancelled.");
-         return;
-      }
-
-      try (FileWriter writer = new FileWriter(csvFile, true)) {
-         writer.append(this.accountID).append(',');
-         writer.append(newInsurance.getInsuranceID()).append(',');
-         writer.append(newInsurance.getInsuranceType()).append(',');
-         writer.append(String.valueOf(newInsurance.getInsurancePremium())).append(',');
-         writer.append(String.valueOf(newInsurance.getCoverageAmount())).append(',');
-         for (String name: newInsurance.getBeneficiaryNames()) {
-            writer.append(name).append(',');
-         }
-         writer.append('\n');
-         
-         
-
-      } catch (IOException e) {
-         System.out.println("An error occurred while writing to the CSV file.");
-         e.printStackTrace();
-      }
-      this.insuranceList.add(newInsurance);
-         
-
-   }
-   
-   public void deposit(double amount){
-      balance += amount;
-      System.out.println("Deposited $" + amount + " into account " + accountID);
-
-   }
-
-   public static void depositToAccount(Scanner scanner, Account depositAccount) {
-      if (depositAccount == null) {
-          System.out.println("No account selected.");
-          return;
-      }
-  
-      System.out.print("Enter deposit amount: ");
-      double depositAmount = scanner.nextDouble();
-      scanner.nextLine(); // Consume the newline character
-  
-      depositAccount.deposit(depositAmount);
-      depositAccount.updateAccountInCsv();
-  }
-
-
-   public void withdraw(double amount){
-      if (amount > withdrawlLimit) {
-         System.out.println("You have hit your withdrawal limit. ");
-         return;
-      }
-      if (balance >= amount) {
-         balance -= amount;
-         System.out.println("Withdrawn $" + amount + " from account " + accountID);
-      }
-      else {
-         System.out.println("Insufficient funds in account " + accountID);
-      }
-
-   }
-
-   public static void withdrawFromAccount(Scanner scanner, Account withdrawAccount) {
-      if (withdrawAccount == null) {
-          System.out.println("No account selected.");
-          return;
-      }
-  
-      System.out.print("Enter withdrawal amount: ");
-      double withdrawalAmount = scanner.nextDouble();
-      scanner.nextLine(); // Consume the newline character
-  
-      withdrawAccount.withdraw(withdrawalAmount);
-      withdrawAccount.updateAccountInCsv();
-  }
-
-   public void transfer(Account recipient, double amount) {
-      if (amount > transferLimit) {
-         System.out.println("You have hit your Transfer limit. ");
-         
-      }
-      if (balance >= amount) {
-         transferLimit-= amount;
-         balance -= amount;
-         recipient.deposit(amount);
-         System.out.println("Transaction successful. $" + amount + " transferred to account " + recipient.accountID + ".");
-         System.out.println("Remaining daily limit: $" + transferLimit + ".");
-      } else {
-         System.out.println("Transaction failed. Insufficient funds or invalid amount.");
-      }
-   }
-   
-   //update balance in csv
-   public void updateAccountInCsv() {
-      final String CSV_FILE = "customers.csv";
-      String tempFile = "temp.csv";
-      File oldFile = new File(CSV_FILE);
-      File newFile = new File(tempFile);
-
-      try {
-            FileWriter fw = new FileWriter(tempFile, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter pw = new PrintWriter(bw);
-            Scanner scanner = new Scanner(new File(CSV_FILE));
-
-            while (scanner.hasNext()) {
-               String line = scanner.nextLine();
-               String[] data = line.split(",");
-               boolean isUpdated = false;
-               for (int i = 0; i < data.length; i++) {
-                  if (data[i].equals(accountID) && i + 1 < data.length) {
-                        data[i + 1] = String.valueOf(balance);
-                        isUpdated = true;
-                        break;
-                  }
-               }
-               if (isUpdated) {
-                  pw.println(String.join(",", data));
-               } else {
-                  pw.println(line);
-               }
+            if (customer != null) {
+                customer.loadAccounts(CSV_FILE, customer.getCustomerID());
+                for (Account account : customer.getAccounts()) {
+                    account.loadLoans(LOAN_FILE, account.getAccountID());
+                }
+                System.out.println("Login successful!");
+                //scanner.close();
+                return customer;
+            } else {
+                System.out.println("Incorrect username or password. Please try again.");
             }
+        }
+    }
 
-            scanner.close();
-            pw.flush();
-            pw.close();
-            oldFile.delete();
-            File dump = new File(CSV_FILE);
-            newFile.renameTo(dump);
-      } catch (Exception e) {
-            System.err.println("Error updating account in CSV file: " + e.getMessage());
-      }
-   }
+    /*public static String showAccountTypeMenu() {
+        Scanner chooseAccountScanner = new Scanner(System.in);
 
-   public void updateCsvWithNewAccount(String customerID, String accountType, String accountID, double balance) {
-      String tempFile = "temp.csv";
-      File oldFile = new File("customers.csv");
-      File newFile = new File(tempFile);
-  
-      try {
-          FileWriter fw = new FileWriter(tempFile, false); // Open in overwrite mode
-          BufferedWriter bw = new BufferedWriter(fw);
-          PrintWriter pw = new PrintWriter(bw);
-          Scanner fileScanner = new Scanner(new File("customers.csv"));
-  
-      while (fileScanner.hasNext()) {
-         String line = fileScanner.nextLine();
-         List<String> data = new ArrayList<>(Arrays.asList(line.split(",", -1)));
+        while (true) {
+            System.out.println("Choose account type: 1. Savings, 2. Fixed Deposit");
+            System.out.print("Your choice: ");
+            int accountTypeChoice = chooseAccountScanner.nextInt();
 
-         if (data.get(0).equals(customerID)) {
-            // Ensure the data list has enough columns
-            while (data.size() <= 14) {
-                  data.add("");
+            switch (accountTypeChoice) {
+                case 1:
+                    chooseAccountScanner.close();
+                    return "Saving";
+
+                case 2:
+                    chooseAccountScanner.close();
+                    return "Fixed Deposit";
+
+                default:
+                    System.out.println("Invalid Choice. Please choose a valid option.");
             }
+        }
+    }*/
 
-            // Update the specific columns with the new account ID and balance
-            int columnIndex = accountType.equals("Savings") ? 11 : 13;
-            data.set(columnIndex, accountID);
-            data.set(columnIndex + 1, String.valueOf(balance));
-            line = String.join(",", data);
-         }
-         pw.println(line);
-      }
-  
-          fileScanner.close();
-          pw.flush();
-          pw.close();
-          oldFile.delete();
-          File dump = new File("customers.csv");
-          newFile.renameTo(dump);
-      } catch (Exception e) {
-          System.err.println("Error updating CSV file: " + e.getMessage());
-      }
-  }
+    public static void showLoginMenu(Customer customer) {
+        Scanner loginScanner = new Scanner(System.in);
 
-  public void loadLoans(String filename, String accountID) {
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
-      try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-         String line;
-         while ((line = reader.readLine()) != null) {
-            String[] data = line.split(",");
-            // Check if the accountID matches
-            if (data[0].equals(accountID)) {
-                  // Create a new Loan object and add it to the list
-                  int loanID = Integer.parseInt(data[2]);
-                  String loanType = data[3];
-                  int loanTerm = Integer.parseInt(data[4]);
-                  double principalLoanAmount = Double.parseDouble(data[5]);
-                  double interestRate = Double.parseDouble(data[6]);
-                  Loan loan = new Loan(loanID, loanType, loanTerm, principalLoanAmount, interestRate);
-                  
-                  // Set the other attributes of the Loan object
-                  loan.setLoanStatus(data[1]);
-                  loan.setRemainingDebt(Double.parseDouble(data[7]));
-                  loan.setStartDate(LocalDate.parse(data[8], formatter));
-                  
-                  // Add the loan to the loanList
-                  loanList.add(loan);
+        while (true) {
+            System.out.println("Choose an option:");
+            System.out.println("1. View account(s) info");
+            System.out.println("2. View Branch info");
+            System.out.println("3. View Insurance info");
+            System.out.println("4. View Loan info");
+            System.out.println("5. Take Loan");
+            System.out.println("6. Deposit");
+            System.out.println("7. Withdraw");
+            System.out.println("8. Transfer");
+            System.out.println("9. Currency Exchange");
+            System.out.println("10. Credit Card");
+            System.out.println("11. Create New Account");
+            System.out.println("12. Settings");
+            System.out.println("13. Logout");
+
+            System.out.print("Your choice: ");
+            int choice = loginScanner.nextInt();
+            loginScanner.nextLine();
+            switch (choice) {
+                case 1:
+                    // Display Account info
+                    customer.displayAllAccountInfo();
+                    break;
+                case 2:
+                    // View Branch info
+                    break;
+                case 3:
+                    // View Insurance info
+                    break;
+                case 4:
+                    // View Loan info
+                    Account viewLoanChoice = customer.promptAccount(loginScanner);
+                    viewLoanChoice.displayLoans();
+                    //To Do: Add option to pay loan
+                    break;
+                case 5:
+                    // Take Loan
+                    Account loanChoice = customer.promptAccount(loginScanner);
+                    loanChoice.createLoan(LOAN_FILE);
+                    break;
+                case 6: // Deposit
+                    Account depositChoice = customer.promptAccount(loginScanner);
+                    Account.depositToAccount(loginScanner, depositChoice);
+                    break;
+                case 7: // Withdraw
+                    Account withdrawChoice = customer.promptAccount(loginScanner);
+                    Account.withdrawFromAccount(loginScanner, withdrawChoice);
+                    break;
+                case 8:
+                    // Transfer
+                    Account accountChoice = customer.promptAccount(loginScanner);
+                    performTransactions(accountChoice, loginScanner);
+                    break;
+                case 9:
+                    // Currency Exchange
+                    break;
+                case 10:
+                    // Credit Card
+                    break;
+                case 11:
+                    Account.createNewAccount(loginScanner, customer);
+                    break;
+                case 12:
+                    // Settings
+                    break;
+                case 13:
+                    System.out.println("Exiting...");
+                    loginScanner.close();
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice. Please choose a valid option.");
             }
-         }
-      } catch (IOException e) {
-         // Handle exception
-      }
-   }
+        }
+    }
 
+    public static void main(String[] args) {
+        Scanner mainscanner = new Scanner(System.in);
+        Bank bank = new Bank(null);
 
+        while (true) {
+            System.out.println("Choose an option:\n1. Sign up\n2. Log In\n3. Exit");
+            System.out.print("Your choice: ");
 
-   
+            int choice = mainscanner.nextInt();
+            mainscanner.nextLine(); // consume newline
 
-   //display
-   public void displayAccountInfo() {
-      System.out.println("~~~~~~~~~~~~~ This is your Account Info ~~~~~~~~~~~~~");
-      System.out.printf("%-20s %s%n", "Account ID:", accountID);
-      System.out.printf("%-20s %s%n", "Account Type:", accountType);
-      System.out.printf("%-20s $%.2f%n", "Balance:", balance);
-      System.out.printf("%-20s $%.2f%n", "Transfer Limit:", transferLimit);
-      System.out.printf("%-20s $%.2f%n", "Withdrawal Limit:", withdrawlLimit);
-      System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-  }
+            switch (choice) {
+                case 1: // Sign up
+                    signup();
+                    break;
 
-  public void displayLoans() {
-      if (loanList.isEmpty()) {
-         System.out.println("No loans available.");
-         return;
-      }
+                case 2: // Log in
+                {
+                    showLoginMenu(login());
+                }
+                break;
+                case 3: // Exit
+                    System.out.println("Exiting...");
+                    mainscanner.close();
+                    System.exit(0);
 
-      System.out.println("Number of loans: " + loanList.size());
-      
-      for (Loan loan : loanList) {
-         loan.getLoanInfo();
-      }
-   }
-
-   public void loadInsurance(String filename, String accountID) {
-      try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-         String line;
-         while ((line = reader.readLine()) != null) {
-            String[] data = line.split(",");
-            if (data[0].equals(accountID)) {
-               String insuranceID = (data[1]);
-               String insuranceType = (data[2]);
-               double insurancePremium = Double.parseDouble(data[3]);
-               double coverageAmount = Double.parseDouble(data[4]);
-               ArrayList<String> beneficiaryNames = new ArrayList<>();
-               for (int i = 5; i < data.length; i++) {
-                  beneficiaryNames.add(data[i]);
-               }
-               Insurance insurance = new Insurance(insuranceID, insuranceType, insurancePremium, coverageAmount);
-               insurance.setBeneficiaryNames(beneficiaryNames);
-               this.insuranceList.add(insurance);
+                default:
+                    System.out.println("Invalid choice. Please choose a valid option.");
             }
-         }
-      } catch (IOException e) {
-         // Handle exception
-      }
-      
-   }
+        }
+    }
 
-   public void displayInsurance() {
-      if (insuranceList.isEmpty()) {
-         System.out.println("No insurance available.");
-         return;
-      }
+    private static void performTransactions(Account account, Scanner scanner) {
+        while (true) {
+            System.out.println("Choose a transaction:");
+            System.out.println("1. Display Account Info");
+            System.out.println("2. Withdraw");
+            System.out.println("3. Deposit");
+            System.out.println("4. Transfer");
+            System.out.println("5. Exit");
 
-      System.out.println("Number of insurance: " + insuranceList.size());
-      
-      for (Insurance insurance : insuranceList) {
-         insurance.displayInsuranceDetails();
-      }
-   }
+            int transactionChoice = scanner.nextInt();
+            scanner.nextLine(); // consume the newline
 
+            switch (transactionChoice) {
+                case 1:
+                    account.displayAccountInfo();
+                    break;
 
+                case 2:
+                    System.out.println("Enter the withdrawal amount:");
+                    double withdrawalAmount = scanner.nextDouble();
+                    scanner.nextLine(); // consume the newline
+                    account.withdraw(withdrawalAmount);
+                    break;
 
+                case 3:
+                    System.out.println("Enter the deposit amount:");
+                    double depositAmount = scanner.nextDouble();
+                    scanner.nextLine(); // consume the newline
+                    account.deposit(depositAmount);
+                    break;
 
+                case 4:
+                    System.out.println("Enter recipient's account ID:");
+                    String recipientAccountID = scanner.nextLine();
+                    System.out.println("Enter the transfer amount:");
+                    double transferAmount = scanner.nextDouble();
+                    scanner.nextLine(); // consume newline
+                    account.transfer(account.getAccountID(), recipientAccountID, transferAmount);
+                    break;
 
-   public void displayTransactionInfo(){
+                case 5:
+                    System.out.println("Exiting transactions!");
+                    System.exit(0);
 
-   }
+                default:
+                    System.out.println("Invalid choice. Please choose a valid option.");
+            }
+        }
+    }
 
-   // public static Account getAccountByID(String accountID) {
-   //    for (Account account : allAccounts) {
-   //       if (account.getAccountID().equals(accountID)) {
-   //          return account;
-   //       }
-   //    }
-   //    return null; // Account not found
-   // }
-
-   // getter setter
-   public double getBalance(){
-      return balance;
-   }
-   public String getAccountID(){
-      return this.accountID;
-   }
-   public String getAccountType(){
-      return this.accountType;
-   }
-
-   public void setTransferLimit(double amount){
-      this.transferLimit = amount;
-
-   }
-   public double getTransferLimit()
-   {
-      return this.transferLimit;
-   }
-
-   public void setWithdrawLimit(double amount){
-      this.withdrawlLimit= amount;
-   }
-   public double getWithdrawLimit()
-   {
-      return this.withdrawlLimit;
-   }
-
-   public void setAccountType(String type){
-      this.accountType = type;
-   }
-}
-
-
-class Transaction {
-   private String transactionId;
-   private String transactionType;
-   private double amount;
-   private Date date;
-   private String accountID;
-
-   public Transaction(String transactionId, String transactionType, double amount, Date date, String accountID) {
-      this.transactionId = transactionId;
-      this.transactionType = transactionType;
-      this.amount = amount;
-      this.date = date;
-      this.accountID = accountID;
-   }
-
-   public String getDetails() {
-      return "Transaction ID: " + transactionId +
-            ", Type: " + transactionType +
-            ", Amount: " + amount +
-            ", Date: " + date +
-            ", Account ID: " + accountID;
-   }
-
-
+    // Authentication method (replace w authentication logic)
+    // private static Customer authenticateCustomer(int customerID) {
+    //     for (Account account : bank.getAccounts()) {
+    //         Customer customer = account.getCustomer();
+    //         if (customer != null && customer.getCustomerID() == customerID) {
+    //             return customer;
+    //         }
+    //     }
+    //     return null; // Customer not found
+    // }
 }
