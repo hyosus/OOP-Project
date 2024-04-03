@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.lang.NumberFormatException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.regex.Pattern;
 import java.util.Scanner;
+import com.bank.components.security.*;
 
 public class Bank {
     private String name;
@@ -139,6 +142,14 @@ public class Bank {
             } 
 
             String password = promptForInput(scanner, "Enter your password: ", "Password");
+            String secretKey = null;
+            try {
+                secretKey = generateKey.generateSecretKey();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            String salt = generateKey.generateSalt();
+            String encryptedPassword = AES.encrypt(password, secretKey, salt);
 
             //check customer details
             name = promptForInput(scanner, "Enter your name: ", "Name");
@@ -208,7 +219,14 @@ public class Bank {
                         .append(email).append(",")
                         .append(address).append(",")
                         .append(defaultAccountNumber).append(",")
-                        .append(accountBalance)
+                        .append(accountBalance).append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append(encryptedPassword).append(",")
+                        .append(secretKey).append(",")
+                        .append(salt)
                         .append("\n"); // go to next line for next customer
                 writer.close();
             } catch (IOException e) {

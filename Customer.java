@@ -1,11 +1,13 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.Security;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import com.bank.components.security.*;
 
 
 public class Customer {
@@ -116,41 +118,47 @@ public class Customer {
         return id;
     }
 
-    public void loadAccounts(String filename, String customerID) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 10 && parts[0].equals(customerID)) {
-                    for (int i = 9; i < parts.length; i += 2) {
-                        String accountId = parts[i];
-                        double balance = Double.parseDouble(parts[i + 1]); // Load the balance from the CSV file
-                        String accountType;
-                        switch (accountId.charAt(0)) {
-                            case 'A':
-                                accountType = "Default";
-                                break;
-                            case 'S':
-                                accountType = "Savings";
-                                break;
-                            case 'J':
-                                accountType = "Investment";
-                                break;
-                            default:
-                                continue; // skip this account if the type is unknown
-                        }
-                        Account account = new Account(accountId, accountType, balance); // Pass the balance to the Account constructor
-                        if (!this.accounts.contains(account)) {
-                            this.accounts.add(account);
-                        }
+public void loadAccounts(String filename, String customerID) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length >= 17 && parts[0].equals(customerID)) {
+                for (int i = 9; i < parts.length-3; i += 2) {
+                    String accountId = parts[i];
+                    if (accountId.isEmpty()) {
+                        continue; // Skip this account if the ID is empty
                     }
-                    break; // exit the loop once the customer is found
+                    double balance = 0;
+                    if (!parts[i + 1].isEmpty()) {
+                        balance = Double.parseDouble(parts[i + 1]); // Load the balance from the CSV file
+                    }
+                    String accountType;
+                    switch (accountId.charAt(0)) {
+                        case 'A':
+                            accountType = "Default";
+                            break;
+                        case 'S':
+                            accountType = "Savings";
+                            break;
+                        case 'J':
+                            accountType = "Investment";
+                            break;
+                        default:
+                            continue; // skip this account if the type is unknown
+                    }
+                    Account account = new Account(accountId, accountType, balance); // Pass the balance to the Account constructor
+                    if (!this.accounts.contains(account)) {
+                        this.accounts.add(account);
+                    }
                 }
+                break; // exit the loop once the customer is found
             }
-        } catch (IOException e) {
-            System.err.println("Error reading CSV file: " + e.getMessage());
         }
+    } catch (IOException e) {
+        System.err.println("Error reading CSV file: " + e.getMessage());
     }
+}
 
     public Account promptAccount(Scanner scanner) {
         if (this.accounts.isEmpty()) {
@@ -175,12 +183,21 @@ public class Customer {
     return this.accounts.get(choice - 1);
 }
 
-    public static Customer loadCustomerByUsernameAndPassword(String username, String password, String filename) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 3 && parts[1].equals(username) && parts[2].equals(password)) {
+public static Customer loadCustomerByUsernameAndPassword(String username, String password, String filename) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length >= 17 && parts[1].equals(username)) {
+                String encryptedPassword = parts[15];
+                String secretKey = parts[16];
+                String salt = parts[17];
+
+                // Decrypt the password from the CSV file
+                String decryptedPassword = AES.decrypt(encryptedPassword, secretKey, salt);
+
+                // Compare the decrypted password with the entered password
+                if (password.equals(decryptedPassword)) {
                     String customerId = parts[0];
                     String name = parts[3];
                     String nric = parts[4];
@@ -190,13 +207,13 @@ public class Customer {
                     String address = parts[8];
 
                     return new Customer(customerId, name, nric, dob, contactNumber, email,  address);
-
                 }
             }
-        } catch (IOException e) {
-            System.err.println("Error reading from CSV file: " + e.getMessage());
         }
-
-        return null; // Return null if username and password not found
+    } catch (IOException e) {
+        System.err.println("Error reading from CSV file: " + e.getMessage());
     }
+
+    return null; // Return null if username and password not found
+}
 }
