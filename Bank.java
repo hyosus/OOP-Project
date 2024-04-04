@@ -224,6 +224,12 @@ public class Bank {
                         .append("").append(",")
                         .append("").append(",")
                         .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
+                        .append("").append(",")
                         .append(encryptedPassword).append(",")
                         .append(secretKey).append(",")
                         .append(salt)
@@ -231,6 +237,8 @@ public class Bank {
                 writer.close();
             } catch (IOException e) {
                 ExceptionHandling.handleIOException(e);
+                System.out.println("Failed to create account.");
+                break;
             }
 
             System.out.println("Customer profile created successfully.");

@@ -123,16 +123,32 @@ public void loadAccounts(String filename, String customerID) {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split(",");
-            if (parts.length >= 17 && parts[0].equals(customerID)) {
-                for (int i = 9; i < parts.length-3; i += 2) {
+            if (parts.length >= 23 && parts[0].equals(customerID)) {
+                for (int i = 9; i < parts.length-3; i += 4) {
                     String accountId = parts[i];
                     if (accountId.isEmpty()) {
                         continue; // Skip this account if the ID is empty
                     }
+
                     double balance = 0;
+                    double transferLimit = 0;
+                    double withdrawalLimit = 0;
                     if (!parts[i + 1].isEmpty()) {
                         balance = Double.parseDouble(parts[i + 1]); // Load the balance from the CSV file
                     }
+                    if (!parts[i + 2].isEmpty()) {
+                        transferLimit = Double.parseDouble(parts[i + 2]);
+                    }
+                    else {
+                        transferLimit = Account.getDefaultTransferLimit();
+                    }
+                    if (!parts[i + 3].isEmpty()) {
+                        withdrawalLimit = Double.parseDouble(parts[i + 3]);
+                    }
+                    else {
+                        withdrawalLimit = Account.getDefaultWithdrawLimit();
+                    }
+
                     String accountType;
                     switch (accountId.charAt(0)) {
                         case 'A':
@@ -147,7 +163,9 @@ public void loadAccounts(String filename, String customerID) {
                         default:
                             continue; // skip this account if the type is unknown
                     }
-                    Account account = new Account(accountId, accountType, balance); // Pass the balance to the Account constructor
+                    Account account = new Account(accountId, accountType, balance);
+                    account.setTransferLimit(transferLimit);
+                    account.setWithdrawLimit(withdrawalLimit);
                     if (!this.accounts.contains(account)) {
                         this.accounts.add(account);
                     }
@@ -189,9 +207,9 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split(",");
             if (parts.length >= 17 && parts[1].equals(username)) {
-                String encryptedPassword = parts[15];
-                String secretKey = parts[16];
-                String salt = parts[17];
+                String encryptedPassword = parts[21];
+                String secretKey = parts[22];
+                String salt = parts[23];
 
                 // Decrypt the password from the CSV file
                 String decryptedPassword = AES.decrypt(encryptedPassword, secretKey, salt);

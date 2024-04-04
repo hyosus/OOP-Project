@@ -22,7 +22,7 @@ public class Account {
     private double balance;
     private double transferLimit;
     private Customer customer;
-    private double withdrawlLimit;
+    private double withdrawalLimit;
     private List<Loan> loanList;
     private List<Transaction> transactionList;
     private static final String ACCOUNTS_CSV_FILE = "accounts.csv";
@@ -30,14 +30,17 @@ public class Account {
     private static final String TRANSACTIONS_CSV_FILE = "transactions.csv";
     private static final String CUSTOMERS_CSV_FILE = "customers.csv";
 
+    private static final double TRANSFER_LIMIT = 3000.0;
+    private static final double WITHDRAWAL_LIMIT = 3000.0;
+
     private LocalDateTime lastResetTime = LocalDateTime.now();
 
 
     public Account(String accountID, String accountType, double balance){
         // this.transactionID = TID;
-        this.transferLimit = 3000;
+        this.transferLimit = TRANSFER_LIMIT;
         this.accountType = accountType;
-        this.withdrawlLimit = 3000;
+        this.withdrawalLimit = WITHDRAWAL_LIMIT;
         this.balance = balance;
         this.accountID = accountID;
         this.loanList = new ArrayList<>();
@@ -188,15 +191,15 @@ public class Account {
             lastResetTime = LocalDateTime.now();
         }
 
-        if (amount > withdrawlLimit) {
+        if (amount > withdrawalLimit) {
             System.out.println("Withdrawal limit exceeded.");
             return;
         }
 
         if (amount <= balance) {
             balance -= amount; // Deduct the amount from the account balance
-            withdrawlLimit -= amount; // Update the remaining daily withdrawal limit
-            System.out.printf("Successfully withdrawn $%.2f. Remaining daily limit: $%.2f\n", amount, withdrawlLimit);
+            withdrawalLimit -= amount; // Update the remaining daily withdrawal limit
+            System.out.printf("Successfully withdrawn $%.2f. Remaining daily limit: $%.2f\n", amount, withdrawalLimit);
 
             updateAccountInCsv(accountID, balance); // Update the new balance in 'customer.csv'
             recordTransaction("Withdrawal", -amount, ""); // Log the withdrawal
@@ -438,7 +441,7 @@ public class Account {
 
                 if (data.get(0).equals(customerID)) {
                     // Ensure the data list has enough columns
-                    while (data.size() <= 14) {
+                    while (data.size() <= 23) {
                         data.add("");
                     }
 
@@ -447,6 +450,8 @@ public class Account {
                     int columnIndex = accountType.equals("Savings") ? 11 : 13;
                     data.set(columnIndex, accountID);
                     data.set(columnIndex + 1, String.valueOf(balance));
+                    data.set(columnIndex + 2, String.valueOf(TRANSFER_LIMIT));
+                    data.set(columnIndex + 3, String.valueOf(WITHDRAWAL_LIMIT));
                     line = String.join(",", data);
                 }
                 pw.println(line);
@@ -505,7 +510,7 @@ public class Account {
         System.out.printf("%-20s %s%n", "Account Type:", accountType);
         System.out.printf("%-20s $%.2f%n", "Balance:", balance);
         System.out.printf("%-20s $%.2f%n", "Transfer Limit:", transferLimit);
-        System.out.printf("%-20s $%.2f%n", "Withdrawal Limit:", withdrawlLimit);
+        System.out.printf("%-20s $%.2f%n", "Withdrawal Limit:", withdrawalLimit);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
@@ -555,12 +560,20 @@ public class Account {
         return this.transferLimit;
     }
 
+    public static double getDefaultTransferLimit(){
+        return TRANSFER_LIMIT;
+    }
+
     public void setWithdrawLimit(double amount){
-        this.withdrawlLimit= amount;
+        this.withdrawalLimit= amount;
     }
     public double getWithdrawLimit()
     {
-        return this.withdrawlLimit;
+        return this.withdrawalLimit;
+    }
+
+    public static double getDefaultWithdrawLimit(){
+        return WITHDRAWAL_LIMIT;
     }
 
     public void setAccountType(String type){
