@@ -399,6 +399,8 @@ public class Bank {
                     break;
                 case 12:
                     // Settings
+                    setting setting = new setting();
+                    setting.customerSettingMenu(customer);
                     break;
                 case 13:
                     System.out.println("Exiting...");

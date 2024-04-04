@@ -1,8 +1,19 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import com.bank.components.security.*;
 
 public class setting {
+    public setting() {
+    }
     public static double MAX_BANK_TRANSFER_LIMIT = 8000.00;
+    private static final String CUSTOMERS_CSV_FILE = "customers.csv";
     //Customer settings
     public void updateName(Customer customer, String name)
     {
@@ -75,117 +86,166 @@ public class setting {
         }
     }
     
+    public void customerSettingMenu(Customer customer) {
+    Scanner scanner = new Scanner(System.in);
+    List<String> lines = new ArrayList<>();
+    boolean changesMade = false;
 
+    try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith(customer.getCustomerID() + ",")) { // Assuming customerId is at the start of each line
+                System.out.println("\nCustomer system");
+                System.out.println("1. Change username");
+                System.out.println("2. Change password");
+                System.out.println("3. Change contact number");
+                System.out.println("4. Change email address");
+                System.out.println("5. Change address");
+                System.out.println("6. Exit");
+                System.out.print("Enter your choice: ");
 
-    public void customerSettingMenu(Customer customer)
-    {
-        Scanner scanner = new Scanner(System.in);
-        while(true)
-        {
-            System.out.println("\nCustomer system");
-            System.out.println("1. Change name");
-            System.out.println("2. Change NRIC");
-            System.out.println("3. Change date of birth");
-            System.out.println("4. Change contact number");
-            System.out.println("5. Change email address");
-            System.out.println("6. Change address");
-            System.out.println("7. Exit");
-            System.out.print("Enter your choice: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
 
-            int choice;
-            try {
-                choice = Integer.parseInt(scanner.nextLine()); // Use nextLine and parse to catch non-integer inputs
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number.");
-                continue; // Skip to the next iteration of the loop
-            }
-
-            switch (choice) {
-                case 1:
-                    System.out.print("Enter a new name: ");
-                    String newName = scanner.nextLine();
-                    if (newName.equals(customer.getName())) {
-                        throw new IllegalArgumentException("New name cannot be the same as the old name.");
-                    }
-                    if (newName.isEmpty()) {
-                        throw new IllegalArgumentException("Name cannot be empty.");
-                    }
-                    updateName(customer, newName);
-                    break;
-                case 2:
-                    System.out.print("Enter a new NRIC: ");
-                    String newNRIC = scanner.nextLine();
-                    if (newNRIC.equals(customer.getNric())) {
-                        throw new IllegalArgumentException("New NRIC cannot be the same as the old NRIC.");
-                    }
-                    if (newNRIC.isEmpty()) {
-                        throw new IllegalArgumentException("NRIC cannot be empty.");
-                    }
-                    updateNRIC(customer, newNRIC);
-                    break;
-                case 3:
-                    System.out.print("Enter a new date of birth (YYYY-MM-DD): ");
-                    String newdob = scanner.nextLine();
-                    LocalDate newBirthDate = LocalDate.parse(newdob); // This can throw DateTimeParseException
-                    if (newBirthDate.equals(customer.getDateOfBirth())) {
-                        throw new IllegalArgumentException("New date of birth cannot be the same as the old date of birth.");
-                    }
-                    updateDateOfBirth(customer, newBirthDate);
-                    break;
-                case 4:
-                    System.out.print("Enter a new contact number: ");
-                    String contactNumberInput = scanner.nextLine();
-                    if (contactNumberInput.isEmpty()) {
-                        System.out.println("Contact number cannot be empty.");
-                    } else {
-                        try {
-                            int newContactNumber = Integer.parseInt(contactNumberInput);
-                            if (newContactNumber == customer.getContactNumber()) {
-                                System.out.println("New contact number cannot be the same as the old contact number.");
-                            } else {
-                                updateContactNumber(customer, newContactNumber);
+                String[] parts = line.split(",");
+                
+                switch (choice) {
+                    case 1:
+                        do{
+                            System.out.print("Enter new username: ");
+                            String newUsername = scanner.nextLine(); // Assuming the name is the second part
+                            if(newUsername.isEmpty())
+                            {
+                                ExceptionHandling.handleEmptyInputException("Username");
                             }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Contact number must be a valid integer.");
-                        }
-                    }
-                    break;
-                case 5:
-                    System.out.print("Enter a new email address: ");
-                    String newEmail = scanner.nextLine();
-                    if (newEmail.equals(customer.getEmail())) {
-                        throw new IllegalArgumentException("New email cannot be the same as the old email.");
-                    }
-                    if (!newEmail.contains("@") || !newEmail.contains(".")) { // Basic check for email format
-                        throw new IllegalArgumentException("Invalid email format.");
-                    }
-                    if (newEmail.isEmpty()) {
-                        throw new IllegalArgumentException("Name cannot be empty.");
-                    }
-                    updateEmail(customer, newEmail);
-                    break;
-                case 6:
-                    System.out.print("Enter a new address: ");
-                    String newAddress = scanner.nextLine();
-                    if (newAddress.equals(customer.getAddress())) {
-                        throw new IllegalArgumentException("New address cannot be the same as the old address.");
-                    }
-                    if (newAddress.isEmpty()) {
-                        throw new IllegalArgumentException("Address cannot be empty.");
-                    }
-                    updateAddress(customer, newAddress);
-                    break;
-                case 7:
-                    System.out.println("Exiting customer settings.");
-                    break;
-                default:
-                    System.out.println("Invalid choice, please enter 1-7.");
-
-            
+                            else if(newUsername.equals(parts[1]))
+                            {
+                                System.out.println("New username cannot be the same as the old username.");
+                            }
+                            else
+                            {
+                                parts[1] = newUsername;
+                                changesMade = true;
+                                break;
+                            }
+                        }while(true);
+                        break;
+                    case 2:
+                        do{
+                            System.out.print("Enter new password: ");
+                            String newPassword = scanner.nextLine();
+                            
+                            if (newPassword.isEmpty())
+                            {
+                                ExceptionHandling.handleEmptyInputException("Password");
+                            }
+                            else if(newPassword.equals(parts[2]))
+                            {
+                                System.out.println("New password cannot be the same as the old password.");
+                            }
+                            else
+                            {
+                                parts[2] = newPassword; 
+                                String secretKey = parts[22];
+                                String salt = parts[23];
+                                String encryptedPassword = AES.encrypt(newPassword, secretKey, salt);
+                                parts[21] = encryptedPassword;
+                                changesMade = true;
+                                break;
+                            }
+                        }while(true);
+                        break;
+                    case 3:
+                        do{
+                            System.out.print("Enter new contact number: ");
+                            String newContactNumber = scanner.nextLine();
+                            if(newContactNumber.isEmpty())
+                            {
+                                ExceptionHandling.handleEmptyInputException("Contact number");
+                            }
+                            else if(newContactNumber.equals(parts[6]))
+                            {
+                                System.out.println("New contact number cannot be the same as the old contact number.");
+                            }
+                            else
+                            {
+                                parts[6] = newContactNumber;
+                                updateContactNumber(customer, Integer.parseInt(parts[6]));
+                                changesMade = true;
+                                break;
+                            }
+                        }while(true);
+                        break;
+                    case 4: 
+                        do
+                        {
+                            System.out.print("Enter new email address: ");
+                            String newEmail = scanner.nextLine();
+                            if(newEmail.isEmpty())
+                            {
+                                ExceptionHandling.handleEmptyInputException("Email");
+                            }
+                            else if(newEmail.equals(parts[7]))
+                            {
+                                System.out.println("New email address cannot be the same as the old email address.");
+                            }
+                            else
+                            {
+                                parts[7] = newEmail;
+                                updateEmail(customer, parts[7]);
+                                changesMade = true;
+                                break;
+                            }
+                        }while (true);
+                        break;
+                    case 5:
+                        do{
+                            System.out.print("Enter new address: ");
+                            String newAddress = scanner.nextLine();
+                            if(newAddress.isEmpty())
+                            {
+                                ExceptionHandling.handleEmptyInputException("Address");
+                            }
+                            else if(newAddress.equals(parts[8]))
+                            {
+                                System.out.println("New address cannot be the same as the old address.");
+                            }
+                            else
+                            {
+                                parts[8] = newAddress;
+                                updateAddress(customer, parts[8]);
+                                changesMade = true;
+                                break;
+                            }
+                        }while(true);
+                        break;
+                    case 6:
+                        System.out.println("Exiting and saving changes if any.");
+                        break;
+                    default:
+                        System.out.println("Invalid choice, please enter a valid number.");
+                }
+                line = String.join(",", parts); // Re-join the parts into a full line
             }
+            lines.add(line); // Add the (possibly modified) line to the list
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
 
+    // If changes were made, write all lines back to the CSV file
+    if (changesMade) {
+        try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, false)) {
+            for (String updatedLine : lines) {
+                writer.write(updatedLine + System.lineSeparator());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         }
     }
+
+    
 
     public void accountSetting(Account account)
     {
