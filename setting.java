@@ -247,45 +247,244 @@ public class setting {
 
     
 
-    public void accountSetting(Account account)
+    public void accountSetting(Customer customer)
     {
-        while(true)
-        {
-            Scanner scanner  = new Scanner(System.in);
-
-            System.out.println("\nAccount system");
-            System.out.println("1. Change transfer limit");
-            System.out.println("2. Change withdraw limit");
-            System.out.println("3. Exit");
-            System.out.print("Enter your choice: ");
-
-            int choice;
-            try {
-                choice = Integer.parseInt(scanner.nextLine()); // Use nextLine and parse to catch non-integer inputs
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number.");
-                continue; // Skip to the next iteration of the loop
-            }
+        Scanner scanner = new Scanner(System.in);
+        Account accountChoice = customer.promptAccount(scanner);
+        boolean changesMade = false;
+        ArrayList<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
+            String line;
             
-            switch (choice) {
-                case 1:
-                    System.out.print("Enter new transfer limit: ");
-                    double newTransferLimit = getValidAmount(scanner);
-                    updateTransferLimit(account, newTransferLimit);
-                    break;
-                case 2:
-                    System.out.print("Enter new withdraw limit: ");
-                    double newWithdrawLimit = getValidAmount(scanner);
-                    updateWithdrawLimit(account, newWithdrawLimit);
-                    break;
-                case 3:
-                    System.out.println("Exiting account setting.");
-                    break; // Exit the while loop and method
-                default:
-                    System.out.println("Invalid choice, please enter 1-3.");
-            }
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                
+                if(accountChoice.getAccountType().equals("Default")&&
+                    parts[9].equals(accountChoice.getAccountID()))
+                {
+                    System.out.println("\nAccount system");
+                    System.out.println("1. Change transfer limit");
+                    System.out.println("2. Change withdrawal limit");
+                    System.out.println("3. Exit");
+                    System.out.print("Enter your choice: ");
+                    int choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume the newline character
 
+                    switch (choice) {
+                        case 1:
+                            do{
+                                System.out.print("Enter new transfer limit: ");
+                                double newTransferLimit = Double.parseDouble(scanner.nextLine());
+                                if(newTransferLimit <= 0)
+                                {
+                                    System.out.println("Transfer limit must be greater than 0. Please try again.");
+                                }
+                                else if(newTransferLimit > MAX_BANK_TRANSFER_LIMIT)
+                                {
+                                    System.out.println("Action cannot be completed(Exceed standard limit). Please approach a bank staff to change the limit.");
+                                }
+                                else if(newTransferLimit == accountChoice.getTransferLimit())
+                                {
+                                    System.out.println("New transfer limit cannot be the same as the old transfer limit.");
+                                }
+                                else
+                                {
+                                    parts[11] = Double.toString(newTransferLimit);
+                                    updateTransferLimit(accountChoice, newTransferLimit);
+                                    changesMade = true;
+                                    break;
+                                }
+                            }while(true);
+                            break;
+                        case 2:
+                            do{
+                                System.out.print("Enter new withdrawal limit: ");
+                                double newWithdrawLimit = Double.parseDouble(scanner.nextLine());
+                                if(newWithdrawLimit <= 0)
+                                {
+                                    System.out.println("Withdrawal limit must be greater than 0. Please try again.");
+                                }
+                                else if(newWithdrawLimit > MAX_BANK_TRANSFER_LIMIT)
+                                {
+                                    System.out.println("Action cannot be completed(Exceed standard limit). Please approach a bank staff to change the limit.");
+                                }
+                                else if(newWithdrawLimit == accountChoice.getWithdrawLimit())
+                                {
+                                    System.out.println("New withdrawal limit cannot be the same as the old withdrawal limit.");
+                                }
+                                else
+                                {
+                                    parts[12] = Double.toString(newWithdrawLimit);
+                                    updateWithdrawLimit(accountChoice, newWithdrawLimit);
+                                    changesMade = true;
+                                    break;
+                                }
+                            }while(true);
+                            break;
+                        case 3:
+                            System.out.println("Exiting and saving changes if any.");
+                            break;
+                        default:
+                            System.out.println("Invalid choice, please enter a valid number.");
+                    }
+                    line = String.join(",", parts);
+                }
+                else if(accountChoice.getAccountType().equals("Savings")&&
+                    parts[13].equals(accountChoice.getAccountID()))
+                {
+                    System.out.println("\nAccount system");
+                    System.out.println("1. Change transfer limit");
+                    System.out.println("2. Change withdrawal limit");
+                    System.out.println("3. Exit");
+                    System.out.print("Enter your choice: ");
+                    int choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume the newline character
+
+                    switch (choice) {
+                        case 1:
+                            do{
+                                System.out.print("Enter new transfer limit: ");
+                                double newTransferLimit = Double.parseDouble(scanner.nextLine());
+                                if(newTransferLimit <= 0)
+                                {
+                                    System.out.println("Transfer limit must be greater than 0. Please try again.");
+                                }
+                                else if(newTransferLimit > MAX_BANK_TRANSFER_LIMIT)
+                                {
+                                    System.out.println("Action cannot be completed(Exceed standard limit). Please approach a bank staff to change the limit.");
+                                }
+                                else if(newTransferLimit == accountChoice.getTransferLimit())
+                                {
+                                    System.out.println("New transfer limit cannot be the same as the old transfer limit.");
+                                }
+                                else
+                                {
+                                    parts[15] = Double.toString(newTransferLimit);
+                                    updateTransferLimit(accountChoice, newTransferLimit);
+                                    changesMade = true;
+                                    break;
+                                }
+                            }while(true);
+                            break;
+                        case 2:
+                            do{
+                                System.out.print("Enter new withdrawal limit: ");
+                                double newWithdrawLimit = Double.parseDouble(scanner.nextLine());
+                                if(newWithdrawLimit <= 0)
+                                {
+                                    System.out.println("Withdrawal limit must be greater than 0. Please try again.");
+                                }
+                                else if(newWithdrawLimit > MAX_BANK_TRANSFER_LIMIT)
+                                {
+                                    System.out.println("Action cannot be completed(Exceed standard limit). Please approach a bank staff to change the limit.");
+                                }
+                                else if(newWithdrawLimit == accountChoice.getWithdrawLimit())
+                                {
+                                    System.out.println("New withdrawal limit cannot be the same as the old withdrawal limit.");
+                                }
+                                else
+                                {
+                                    parts[16] = Double.toString(newWithdrawLimit);
+                                    updateWithdrawLimit(accountChoice, newWithdrawLimit);
+                                    changesMade = true;
+                                    break;
+                                }
+                            }while(true);
+                            break;
+                        case 3:
+                            System.out.println("Exiting and saving changes if any.");
+                            break;
+                        default:
+                            System.out.println("Invalid choice, please enter a valid number.");
+                    }line = String.join(",", parts);
+                }
+                else if(accountChoice.getAccountType().equals("Investment")&&
+                    parts[17].equals(accountChoice.getAccountID()))
+                {
+                    System.out.println("\nAccount system");
+                    System.out.println("1. Change transfer limit");
+                    System.out.println("2. Change withdrawal limit");
+                    System.out.println("3. Exit");
+                    System.out.print("Enter your choice: ");
+                    int choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume the newline character
+
+                    switch (choice) {
+                        case 1:
+                            do{
+                                System.out.print("Enter new transfer limit: ");
+                                double newTransferLimit = Double.parseDouble(scanner.nextLine());
+                                if(newTransferLimit <= 0)
+                                {
+                                    System.out.println("Transfer limit must be greater than 0. Please try again.");
+                                }
+                                else if(newTransferLimit > MAX_BANK_TRANSFER_LIMIT)
+                                {
+                                    System.out.println("Action cannot be completed(Exceed standard limit). Please approach a bank staff to change the limit.");
+                                }
+                                else if(newTransferLimit == accountChoice.getTransferLimit())
+                                {
+                                    System.out.println("New transfer limit cannot be the same as the old transfer limit.");
+                                }
+                                else
+                                {
+                                    parts[19] = Double.toString(newTransferLimit);
+                                    updateTransferLimit(accountChoice, newTransferLimit);
+                                    changesMade = true;
+                                    break;
+                                }
+                            }while(true);
+                            break;
+                        case 2:
+                            do{
+                                System.out.print("Enter new withdrawal limit: ");
+                                double newWithdrawLimit = Double.parseDouble(scanner.nextLine());
+                                if(newWithdrawLimit <= 0)
+                                {
+                                    System.out.println("Withdrawal limit must be greater than 0. Please try again.");
+                                }
+                                else if(newWithdrawLimit > MAX_BANK_TRANSFER_LIMIT)
+                                {
+                                    System.out.println("Action cannot be completed(Exceed standard limit). Please approach a bank staff to change the limit.");
+                                }
+                                else if(newWithdrawLimit == accountChoice.getWithdrawLimit())
+                                {
+                                    System.out.println("New withdrawal limit cannot be the same as the old withdrawal limit.");
+                                }
+                                else
+                                {
+                                    parts[20] = Double.toString(newWithdrawLimit);
+                                    updateWithdrawLimit(accountChoice, newWithdrawLimit);
+                                    changesMade = true;
+                                    break;
+                                }
+                            }while(true);
+                            break;
+                        case 3:
+                            System.out.println("Exiting and saving changes if any.");
+                            break;
+                        default:
+                            System.out.println("Invalid choice, please enter a valid number.");
+                    }line = String.join(",", parts);
+                }
+                lines.add(line);
+            }
         }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(changesMade)
+        {
+            try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, false)) {
+                for (String updatedLine : lines) {
+                    writer.write(updatedLine + System.lineSeparator());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+
     }
     public void settingMenu(Customer customer) {
         Scanner scanner = new Scanner(System.in);
@@ -304,8 +503,7 @@ public class setting {
                     customerSettingMenu(customer); // Call the method to handle customer settings
                     break;
                 case "2":
-                    Account account = customer.promptAccount(scanner);
-                    accountSetting(account); // Call the method to handle account settings
+                    accountSetting(customer); // Call the method to handle account settings
                     break;
                 case "3":
                     System.out.println("Exiting settings.");

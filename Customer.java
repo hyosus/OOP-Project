@@ -213,18 +213,31 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
 
                 // Decrypt the password from the CSV file
                 String decryptedPassword = AES.decrypt(encryptedPassword, secretKey, salt);
+                g17_SYE newOTP = new g17_SYE(username);
+                Scanner scanner = new Scanner(System.in);
+                System.out.println("Enter OTP:");
+                int otp = scanner.nextInt();
+                scanner.nextLine();
 
                 // Compare the decrypted password with the entered password
                 if (password.equals(decryptedPassword)) {
-                    String customerId = parts[0];
-                    String name = parts[3];
-                    String nric = parts[4];
-                    LocalDate dob = LocalDate.parse(parts[5]);
-                    int contactNumber = Integer.parseInt(parts[6]);
-                    String email = parts[7];
-                    String address = parts[8];
+                    g17_SYE.OTPStatus status = newOTP.OTPValidation(otp);
+                    if (status == g17_SYE.OTPStatus.VERIFIED) {
+                        String customerId = parts[0];
+                        String name = parts[3];
+                        String nric = parts[4];
+                        LocalDate dob = LocalDate.parse(parts[5]);
+                        int contactNumber = Integer.parseInt(parts[6]);
+                        String email = parts[7];
+                        String address = parts[8];
 
-                    return new Customer(customerId, name, nric, dob, contactNumber, email,  address);
+                        return new Customer(customerId, name, nric, dob, contactNumber, email,  address);
+                    } else if (status == g17_SYE.OTPStatus.EXPIRED) {
+                        System.out.println("OTP has expired. A new OTP will be sent.");
+                        newOTP = new g17_SYE(username); // Recreate the object to send a new OTP
+                    } else {
+                        System.out.println("Invalid OTP. Please try again.");
+                    }
                 }
             }
         }
@@ -233,5 +246,5 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
     }
 
     return null; // Return null if username and password not found
-}
+}   
 }

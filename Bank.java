@@ -400,7 +400,7 @@ public class Bank {
                 case 12:
                     // Settings
                     setting setting = new setting();
-                    setting.customerSettingMenu(customer);
+                    setting.settingMenu(customer);
                     break;
                 case 13:
                     System.out.println("Exiting...");
