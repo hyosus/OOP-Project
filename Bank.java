@@ -390,7 +390,7 @@ public class Bank {
                     if (creditCardChoice == null) {
                         break;
                     }
-                    creditCardChoice.displayAccountInfo();
+                    creditCardChoice.creditCardAccountMenu(loginScanner);
                     break;
                 case 5:
                     // Apply for Credit Card

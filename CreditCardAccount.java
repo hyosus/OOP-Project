@@ -92,7 +92,6 @@ public class CreditCardAccount extends Account {
 
             CreditCardAccount creditCardAccount = new CreditCardAccount(accountID, accountType, 0.0, creditCard);
 
-            //to fix its not storing the data in the file
             try (FileWriter writer = new FileWriter(CREDIT_CARD_ACCOUNT_FILE, true)) {
                 BufferedWriter buffer = new BufferedWriter(writer);
                 PrintWriter printWriter = new PrintWriter(buffer);
@@ -116,6 +115,30 @@ public class CreditCardAccount extends Account {
         return this.getAccountID() + "," + customer.getCustomerID() + "," + customer.getName() + "," + creditCard.getcreditCardNumber() + "," + creditCard.getCompanyIssuer() + "," + creditCard.getCVV() + "," + creditCard.getCardPin() + "," + creditCard.getExpiryDate() + "," + creditCard.getCreditLimit() + "," + this.getAccountType() + "," + creditCard.getDailyLimit() + "," + this.getBalance();
     }
 
+    // Method to let user pay outstanding amount
+    public void payOutstandingCreditWithBalance(Scanner scanner) {
+        System.out.println("Your outstanding amount is: " + this.getCreditCard().getOutstandingPayment());
+        System.out.println("Balance available: " + this.getBalance());
+        do {
+            System.out.print("Enter the amount you want to pay: ");
+            BigDecimal amount = scanner.nextBigDecimal();
+            if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                System.out.println("Invalid amount. Please enter a positive amount.");
+            } else if (amount.compareTo(this.getCreditCard().getOutstandingPayment()) > 0 || amount.compareTo(BigDecimal.valueOf(this.getBalance())) > 0) {
+                System.out.println("Unable to process payment, ensure amount does not exceed outstanding owed amount or balance.");
+            } else {
+                BigDecimal balance = BigDecimal.valueOf(this.getBalance());
+                BigDecimal newBalance = balance.subtract(amount);
+                this.setBalance(newBalance.doubleValue());
+                this.getCreditCard().setOutstandingPayment(this.getCreditCard().getOutstandingPayment().subtract(amount));
+                System.out.println("Payment successful. Your balance is now: " + this.getBalance());
+                System.out.println("Outstanding amount is now: " + this.getCreditCard().getOutstandingPayment());
+                //Bank.updateAccountBalance(this.getAccountID(), this.getBalance(), CREDIT_CARD_ACCOUNT_FILE);
+                break;
+            }
+        } while (true);
+    }
+
     public void displayAccountInfo() {
         System.out.println("~~~~~~~~~~~~~ This is your Credit Card Info ~~~~~~~~~~~~~");
         System.out.println("Credit Card Number: " + this.creditCard.getcreditCardNumber());
@@ -124,9 +147,33 @@ public class CreditCardAccount extends Account {
         System.out.println("Expiry Date: " + this.creditCard.getExpiryDate());
         System.out.println("Credit Limit: " + this.creditCard.getCreditLimit());
         System.out.println("Daily Limit: " + this.creditCard.getDailyLimit());
-        System.out.println("Current Spent: " + this.getBalance());
+        System.out.println("Current Balance: " + this.getBalance());
+        System.out.println("Outstanding Payment: " + this.creditCard.getOutstandingPayment());
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         
+    }
+
+    public void creditCardAccountMenu(Scanner scanner){        
+        do {
+            System.out.println("~~~~~~~~~~~~~ Credit Card Account Menu ~~~~~~~~~~~~~");
+            System.out.println("1. Show Account Info");
+            System.out.println("2. Pay Outstanding Amount");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            switch (choice) {
+                case 1:
+                    displayAccountInfo();
+                    break;
+                case 2:
+                    payOutstandingCreditWithBalance(scanner);
+                    break;
+                case 3:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
+            }
+        } while (true);
     }
 
     

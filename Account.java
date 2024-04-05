@@ -55,7 +55,7 @@ public class Account {
             Random rand = new Random();
             int fiveDigitNumber = 10000 + rand.nextInt(90000);
             id = "A" + Integer.toString(fiveDigitNumber);
-        } while (Bank.idExistsInCsv(id));
+        } while (Bank.idExistsInCsv(id, CUSTOMERS_CSV_FILE));
         return id;
     }
 
@@ -77,7 +77,7 @@ public class Account {
         do {
             int fiveDigitNumber = 10000 + random.nextInt(90000); // Generate a random 6-digit number
             newAccountID = prefix + fiveDigitNumber;
-        } while (Bank.idExistsInCsv(newAccountID)); // Keep generating a new account ID until it doesn't exist in the CSV file
+        } while (Bank.idExistsInCsv(newAccountID, CUSTOMERS_CSV_FILE)); // Keep generating a new account ID until it doesn't exist in the CSV file
 
 
         return newAccountID;
@@ -544,6 +544,9 @@ public class Account {
     // getter setter
     public double getBalance(){
         return balance;
+    }
+    public void setBalance(double balance){
+        this.balance = balance;
     }
     public String getAccountID(){
         return this.accountID;

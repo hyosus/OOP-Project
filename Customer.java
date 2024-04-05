@@ -208,13 +208,15 @@ public void loadCreditCards(String filename, String customerID) {
                 BigDecimal creditLimit = new BigDecimal(parts[8]);
                 String cardType = parts[9];
                 BigDecimal dailySpendLimit = new BigDecimal(parts[10]);
-                double currentSpentAmount = Double.parseDouble(parts[11]);
+                BigDecimal currentSpentAmount = new BigDecimal(parts[11]);
+                double balance = Double.parseDouble(parts[12]);
 
                 // Create new CreditCard object
                 g17_CRD creditCard = new g17_CRD(customerName, creditCardNumber, companyIssuer, cvv, cardPin, expiryDate, creditLimit);
                 creditCard.setDailyLimit(dailySpendLimit);
+                creditCard.setOutstandingPayment(currentSpentAmount);
 
-                CreditCardAccount account = new CreditCardAccount(accountID, cardType, currentSpentAmount, creditCard);
+                CreditCardAccount account = new CreditCardAccount(accountID, cardType, balance, creditCard);
                 if (!this.creditCardAccounts.contains(account)) {
                     this.creditCardAccounts.add(account);
                 }
