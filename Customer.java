@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.Security;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -8,9 +9,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import com.bank.components.security.*;
+import com.G17.Bank.Entity.CC.*;
+
 
 
 public class Customer {
+
+    private static final String CUSTOMERS_CSV_FILE = "customers.csv";
+    private static final String CREDIT_CARD_ACCOUNT_FILE = "CreditCard.csv";
+
     private String customerID;
     private String name;
     private String nric;
@@ -19,6 +26,7 @@ public class Customer {
     private String email;
     private String address;
     private List<Account> accounts;
+    private List<CreditCardAccount> creditCardAccounts;
 
     public Customer(String customerID, String name, String nric, LocalDate dob, int contactNumber, String email,  String address) {
         this.customerID = customerID;
@@ -29,7 +37,7 @@ public class Customer {
         this.email = email;
         this.address = address;
         this.accounts = new ArrayList<>();
-        
+        this.creditCardAccounts = new ArrayList<>();
     }
 
     public String getName() {
@@ -93,6 +101,10 @@ public class Customer {
         return accounts;
     }
 
+    public void addAccount(Account account) {
+        this.accounts.add(account);
+    }
+
     public void displayAllAccountInfo() {
         for (Account account : accounts) {
             account.displayAccountInfo();
@@ -114,7 +126,7 @@ public class Customer {
             Random rand = new Random();
             int fiveDigitNumber = 10000 + rand.nextInt(90000);
             id = "C" + Integer.toString(fiveDigitNumber);
-        } while (Bank.idExistsInCsv(id));
+        } while (Bank.idExistsInCsv(id, CUSTOMERS_CSV_FILE));
         return id;
     }
 
@@ -163,6 +175,7 @@ public void loadAccounts(String filename, String customerID) {
                         default:
                             continue; // skip this account if the type is unknown
                     }
+                    // Load normal accounts
                     Account account = new Account(accountId, accountType, balance);
                     account.setTransferLimit(transferLimit);
                     account.setWithdrawLimit(withdrawalLimit);
@@ -171,6 +184,40 @@ public void loadAccounts(String filename, String customerID) {
                     }
                 }
                 break; // exit the loop once the customer is found
+            }
+        }
+    } catch (IOException e) {
+        System.err.println("Error reading CSV file: " + e.getMessage());
+    }
+}
+
+public void loadCreditCards(String filename, String customerID) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+        reader.readLine(); // Skip the header line
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length >= 12 && parts[1].equals(customerID)) {
+                String accountID = parts[0];
+                String customerName = parts[2];
+                long creditCardNumber = Long.parseLong(parts[3]);
+                String companyIssuer = parts[4];
+                int cvv = Integer.parseInt(parts[5]);
+                int cardPin = Integer.parseInt(parts[6]);
+                LocalDate expiryDate = LocalDate.parse(parts[7]);
+                BigDecimal creditLimit = new BigDecimal(parts[8]);
+                String cardType = parts[9];
+                BigDecimal dailySpendLimit = new BigDecimal(parts[10]);
+                double currentSpentAmount = Double.parseDouble(parts[11]);
+
+                // Create new CreditCard object
+                g17_CRD creditCard = new g17_CRD(customerName, creditCardNumber, companyIssuer, cvv, cardPin, expiryDate, creditLimit);
+                creditCard.setDailyLimit(dailySpendLimit);
+
+                CreditCardAccount account = new CreditCardAccount(accountID, cardType, currentSpentAmount, creditCard);
+                if (!this.creditCardAccounts.contains(account)) {
+                    this.creditCardAccounts.add(account);
+                }
             }
         }
     } catch (IOException e) {
@@ -199,6 +246,45 @@ public void loadAccounts(String filename, String customerID) {
         } while (choice < 1 || choice > this.accounts.size());
 
     return this.accounts.get(choice - 1);
+}
+
+public CreditCardAccount promptCreditCardAccount(Scanner scanner) {
+    if (this.creditCardAccounts.isEmpty()) {
+        System.out.println("No credit card to show.");
+        return null;
+    }
+
+    System.out.println("Please choose a credit card account to view:");
+    for (int i = 0; i < this.creditCardAccounts.size(); i++) {
+        System.out.printf("%d. Account ID: %s, Credit Card Number: %d, Issuer: %s\n", i + 1, this.creditCardAccounts.get(i).getAccountID(), this.creditCardAccounts.get(i).getCreditCard().getcreditCardNumber(), this.creditCardAccounts.get(i).getCreditCard().getCompanyIssuer());
+    }
+
+    int choice;
+    do {
+        System.out.print("Your choice: ");
+        choice = scanner.nextInt();
+        if (choice < 1 || choice > this.creditCardAccounts.size()) {
+            System.out.println("Invalid choice. Please choose a valid option.");
+        }
+    } while (choice < 1 || choice > this.creditCardAccounts.size());
+
+    int pin;
+    boolean validPin;
+    do {
+        System.out.print("Please enter your card PIN (or -1 to cancel): ");
+        pin = scanner.nextInt();
+    
+        if (pin == -1) {
+            return null; // User chose to cancel
+        }
+    
+        validPin = this.creditCardAccounts.get(choice - 1).getCreditCard().isCardPinValid(pin);
+        if (!validPin) {
+            System.out.println("Invalid PIN. Please try again.");
+        }
+    } while (!validPin);
+
+    return this.creditCardAccounts.get(choice - 1);
 }
 
 public static Customer loadCustomerByUsernameAndPassword(String username, String password, String filename) {
@@ -246,5 +332,5 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
     }
 
     return null; // Return null if username and password not found
-}   
+}
 }
