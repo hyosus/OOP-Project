@@ -116,7 +116,7 @@ public class CreditCardAccount extends Account {
         return this.getAccountID() + "," + customer.getCustomerID() + "," + customer.getName() + "," + creditCard.getcreditCardNumber() + "," + creditCard.getCompanyIssuer() + "," + creditCard.getCVV() + "," + creditCard.getCardPin() + "," + creditCard.getExpiryDate() + "," + creditCard.getCreditLimit() + "," + this.getAccountType() + "," + creditCard.getDailyLimit() + "," + this.getBalance();
     }
 
-    public void viewCreditCardDetails() {
+    public void displayAccountInfo() {
         System.out.println("~~~~~~~~~~~~~ This is your Credit Card Info ~~~~~~~~~~~~~");
         System.out.println("Credit Card Number: " + this.creditCard.getcreditCardNumber());
         System.out.println("Company Issuer: " + this.creditCard.getCompanyIssuer());
