@@ -1,4 +1,4 @@
-accountID,CustomerID,customerName,creditcardNumber,companyIssuer,cvv,cardPin,expiryDate,creditLimit,creditCardType,dailySpendingLimit,currentSpentAmount
-CC42314,C11496,ys,3213734673354657,VISA,199,358005,2029-04-05,50000.0,Premium Credit Card,5000.0,0.0
-CC58631,C48543,ys,8280304337632518,VISA,175,704745,2029-04-05,10000.0,Standard Credit Card,5000,0.0
-CC49101,C48543,ys,1172029936997314,VISA,239,879379,2029-04-05,10000.0,Standard Credit Card,5000,0.0
+accountID,CustomerID,customerName,creditcardNumber,companyIssuer,cvv,cardPin,expiryDate,creditLimit,creditCardType,dailySpendingLimit,currentSpentAmount, balance
+CC42314,C11496,ys,3213734673354657,VISA,199,358005,2029-04-05,50000.0,Premium Credit Card,5000.0,600.0, 250
+CC58631,C48543,ys,8280304337632518,VISA,175,704745,2029-04-05,10000.0,Standard Credit Card,5000,500.0, 1000
+CC49101,C48543,ys,1172029936997314,VISA,239,879379,2029-04-05,10000.0,Standard Credit Card,5000,300.0, 5000
