@@ -131,12 +131,50 @@ public class CreditCardAccount extends Account {
                 BigDecimal newBalance = balance.subtract(amount);
                 this.setBalance(newBalance.doubleValue());
                 this.getCreditCard().setOutstandingPayment(this.getCreditCard().getOutstandingPayment().subtract(amount));
+                // Items to be updated in csv file
+                updateAccountInCsv(this, newBalance, amount);
                 System.out.println("Payment successful. Your balance is now: " + this.getBalance());
                 System.out.println("Outstanding amount is now: " + this.getCreditCard().getOutstandingPayment());
-                //Bank.updateAccountBalance(this.getAccountID(), this.getBalance(), CREDIT_CARD_ACCOUNT_FILE);
+                
                 break;
             }
         } while (true);
+    }
+
+    //overloaded method to update csv
+    public void updateAccountInCsv(CreditCardAccount ccAcount, BigDecimal newBalance, BigDecimal amount) {
+        
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader buffer = new BufferedReader(new FileReader(CREDIT_CARD_ACCOUNT_FILE))) {
+            String line;
+            while ((line = buffer.readLine()) != null) {
+                List<String> values = Arrays.asList(line.split(","));
+                if (values.get(0).equals(ccAcount.getAccountID())) {
+                    BigDecimal newOutstandingPayment = ccAcount.getCreditCard().getOutstandingPayment().subtract(amount);
+                    values.set(11, newOutstandingPayment.toString());
+                    values.set(12, Double.toString(newBalance.doubleValue()));
+                    records.add(values);
+                } else {
+                    records.add(values);
+                }
+            }
+        } catch (IOException e) {
+            ExceptionHandling.handleIOException(e);
+            System.out.println("Failed to update account.");
+        }
+
+        try (FileWriter writer = new FileWriter(CREDIT_CARD_ACCOUNT_FILE)) {
+            BufferedWriter buffer = new BufferedWriter(writer);
+            PrintWriter printWriter = new PrintWriter(buffer);
+            for (List<String> record : records) {
+                printWriter.println(String.join(",", record));
+            }
+            printWriter.flush();
+        } catch (IOException e) {
+            ExceptionHandling.handleIOException(e);
+            System.out.println("Failed to update account.");
+        }
+
     }
 
     public void displayAccountInfo() {
