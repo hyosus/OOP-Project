@@ -36,24 +36,20 @@ public class ExceptionHandling {
     // Method to handle IOException
     public static void handleIOException(IOException e) {
         System.err.println("Error reading from/ writing to CSV file: " + e.getMessage());
-        // You can choose to log the exception or perform additional error handling here
     }
 
     // Method to handle DateTimeParseException
     public static void handleDateTimeParseException() {
         System.err.println("Invalid date format. Please enter the date in the format YYYY-MM-DD.");
-        // You can choose to log the exception or perform additional error handling here
     }
 
     // Method to handle handleNumberFormatException
     public static void handleNumberFormatException() {
         System.err.println("Invalid contact number. Please enter a valid number.");
-        // You can choose to log the exception or perform additional error handling here
     }
 
     // Method to handle other exceptions
     public static void handleOtherException(Exception e) {
         System.err.println("An unexpected error occurred: " + e.getMessage());
-        // You can choose to log the exception or perform additional error handling here
     }
 }
