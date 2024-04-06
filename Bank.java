@@ -17,13 +17,61 @@ import com.G17.Bank.Entity.CC.*;
 
 public class Bank {
     private String name;
-    final static String CSV_FILE = "customers.csv";
+    final static String CUSTOMERS_CSV_FILE = "customers.csv";
     final static String LOAN_FILE = "Loans.csv";
     final static String CREDIT_CARD_FILE = "CreditCard.csv";
+    private static final List<Customer> allCustomers = loadAllCustomers();
 
     public Bank(String name) {
         this.name = name;
+        loadAllCustomers();
     }
+
+    // Method to load all customers and their accounts from the CSV file
+    public static List<Customer> loadAllCustomers() {
+        List<Customer> customers = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
+            String line;
+            // Skip the header line
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                // Ensure enough parts exist for basic customer info
+                if (parts.length >= 9) {
+                    String customerID = parts[0];
+                    String name = parts[3];
+                    String nric = parts[4];
+                    LocalDate dob = LocalDate.parse(parts[5]);
+                    int contactNumber = Integer.parseInt(parts[6]);
+                    String email = parts[7];
+                    String address = parts[8];
+                    // Create customer object
+                    Customer customer = new Customer(customerID, name, nric, dob, contactNumber, email, address);
+                    // Load accounts and credit cards for this customer
+                    customer.loadAccounts(CUSTOMERS_CSV_FILE, customerID); // Assuming this method populates customer's accounts
+                    customer.loadCreditCards(CREDIT_CARD_FILE, customerID); // Assuming this method populates customer's credit cards
+                    // Add the fully loaded customer to the list
+                    customers.add(customer);
+                }
+            }
+        } catch (IOException | ArrayIndexOutOfBoundsException | NumberFormatException | DateTimeParseException e) {
+            System.err.println("Error reading CSV file: " + e.getMessage());
+        }
+        return customers;
+    }
+
+
+    public static Customer findCustomerByAccountID(String accountID, List<Customer> allCustomers) {
+        for (Customer customer : allCustomers) {
+            for (Account account : customer.getAccounts()) {
+                if (account.getAccountID().equals(accountID)) {
+                    return customer; // Found the owner of the account
+                }
+            }
+        }
+        return null; // Account ID not found
+    }
+
 
     // Adds an account to the bank.
     // public void createAccount(Account account) {
@@ -55,8 +103,8 @@ public class Bank {
         return name;
     }
 
-    public static boolean idExistsInCsv(String id, String CSV_FILE) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+    public static boolean idExistsInCsv(String id, String CUSTOMERS_CSV_FILE) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
@@ -71,8 +119,8 @@ public class Bank {
     }
 
     private static boolean usernameExistsInCsv(String username) {
-        final String CSV_FILE = "customers.csv";
-        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE))) {
+        final String CUSTOMERS_CSV_FILE = "customers.csv";
+        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
@@ -129,7 +177,7 @@ public class Bank {
         int contactNumber;
         String email;
         String address;
-        
+
         while (true) {
             //check username and password
             System.out.println("Enter username and password to create an customer profile (type 'exit' to finish):");
@@ -140,7 +188,7 @@ public class Bank {
             } else if (usernameExistsInCsv(username)) {
                 System.out.println("Username already exists. Please choose another username.");
                 continue; // Reprompt for username
-            } 
+            }
 
             String password = promptForInput(scanner, "Enter your password: ", "Password");
             String secretKey = null;
@@ -205,7 +253,7 @@ public class Bank {
 
             address = promptForInput(scanner, "Enter your address: ", "Address");
 
-            try (FileWriter writer = new FileWriter(CSV_FILE, true)) {
+            try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, true)) {
                 String customerID = Customer.generateRandomCustomerID(); // generate random customer ID
                 String defaultAccountNumber = Account.generateRandomDefaultAccountID(); // generate random account number
                 String accountBalance = "0"; // initial account balance
@@ -282,7 +330,7 @@ public class Bank {
     // }
 
     public static Customer login() {
-        final String CSV_FILE = "customers.csv";
+        final String CUSTOMERS_CSV_FILE = "customers.csv";
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -293,10 +341,10 @@ public class Bank {
             System.out.print("Password: ");
             String password = scanner.nextLine();
 
-            Customer customer = Customer.loadCustomerByUsernameAndPassword(username, password, CSV_FILE);
+            Customer customer = Customer.loadCustomerByUsernameAndPassword(username, password, CUSTOMERS_CSV_FILE);
 
             if (customer != null) {
-                customer.loadAccounts(CSV_FILE, customer.getCustomerID());
+                customer.loadAccounts(CUSTOMERS_CSV_FILE, customer.getCustomerID());
                 for (Account account : customer.getAccounts()) {
                     account.loadLoans(LOAN_FILE, account.getAccountID());
                 }
@@ -343,13 +391,14 @@ public class Bank {
             // System.out.println("3. View Insurance info");
             // System.out.println("4. View Loan info");
             // System.out.println("5. Take Loan");
-            System.out.println("2. Deposit/Withdraw/Transfer");
-            System.out.println("3. Currency Exchange");
-            System.out.println("4. Show Credit Card(s)");
-            System.out.println("5. Apply for Credit Card");
-            System.out.println("6. Create New Account");
-            System.out.println("7. Settings");
-            System.out.println("8. Logout");
+            System.out.println("2. Deposit/Withdraw");
+            System.out.println("3. Transfer");
+            System.out.println("4. Currency Exchange");
+            System.out.println("5. Show Credit Card(s)");
+            System.out.println("6. Apply for Credit Card");
+            System.out.println("7. Create New Account");
+            System.out.println("8. Settings");
+            System.out.println("9. Logout");
 
             System.out.print("Your choice: ");
             int choice = loginScanner.nextInt();
@@ -382,9 +431,72 @@ public class Bank {
                     performTransactions(accountChoice, loginScanner);
                     break;
                 case 3:
+                    System.out.println("1. Internal Transfer 2. External Transfer");
+                    int transferOption = loginScanner.nextInt();
+                    loginScanner.nextLine(); // Consume the newline
+
+                    if (transferOption == 1) {
+                        // Internal Transfer
+                        // Select Sender and Receiver Account from the Customer's Accounts
+                        System.out.println("Select Sender Account:");
+                        Account senderAccount = customer.promptAccount(loginScanner);
+                        System.out.println("Select Receiver Account:");
+                        Account receiverAccount = customer.promptAccount(loginScanner);
+
+                        if (senderAccount != null && receiverAccount != null && !senderAccount.equals(receiverAccount)) {
+                            System.out.println("Enter the transfer amount:");
+                            double transferAmount = loginScanner.nextDouble();
+                            loginScanner.nextLine(); // Consume newline
+
+                            // Directly modify balances without needing to fetch Customer again
+                            if (transferAmount > senderAccount.getBalance()) {
+                                System.out.println("Insufficient funds for the transfer.");
+                            } else {
+                                senderAccount.setBalance(senderAccount.getBalance() - transferAmount);
+                                receiverAccount.setBalance(receiverAccount.getBalance() + transferAmount);
+                                System.out.println("Transfer successful: $" + transferAmount + " from " + senderAccount.getAccountID() + " to " + receiverAccount.getAccountID());
+
+                                senderAccount.transfer(receiverAccount, transferAmount);
+                            }
+                        } else {
+                            System.out.println("Invalid accounts selected for transfer.");
+                        }
+
+                        } else if (transferOption == 2) {
+                        System.out.println("Select Sender Account:");
+                        Account senderAccount = customer.promptAccount(loginScanner);
+                        if (senderAccount == null) {
+                            System.out.println("No sender account selected.");
+                            break; // Exit this case if no sender account is selected
+                        }
+
+                        loginScanner.nextLine(); // This line ensures any leftover newline character is consumed.
+
+                        System.out.println("Enter recipient's account ID:");
+                        String recipientAccountID = loginScanner.nextLine(); // Correctly read the recipient's account ID
+
+                        if (recipientAccountID.isEmpty()) {
+                            System.out.println("Recipient account ID cannot be empty.");
+                            break; // Exit this case if no recipient account ID is entered
+                        }
+
+                        System.out.println("Enter the transfer amount:");
+                        if (!loginScanner.hasNextDouble()) {
+                            System.out.println("Invalid amount. Transfer cancelled.");
+                            loginScanner.nextLine(); // Consume the invalid input
+                            break;
+                        }
+                        double transferAmount = loginScanner.nextDouble();
+
+                        senderAccount.transfer(recipientAccountID, transferAmount);
+                        break;
+                    }
+
+
+                case 4:
                     // Currency Exchange
                     break;
-                case 4:
+                case 5:
                     // Credit Card
                     CreditCardAccount creditCardChoice = customer.promptCreditCardAccount(loginScanner);
                     if (creditCardChoice == null) {
@@ -392,19 +504,19 @@ public class Bank {
                     }
                     creditCardChoice.creditCardAccountMenu(loginScanner);
                     break;
-                case 5:
+                case 6:
                     // Apply for Credit Card
                     CreditCardAccount.createCreditCardAccount(loginScanner, customer);
                     break;
-                case 6:
+                case 7:
                     Account.createNewAccount(loginScanner, customer);
                     break;
-                case 7:
+                case 8:
                     // Settings
                     setting setting = new setting();
                     setting.settingMenu(customer);
                     break;
-                case 8:
+                case 9:
                     System.out.println("Exiting...");
                     loginScanner.close();
                     System.exit(0);
@@ -445,15 +557,19 @@ public class Bank {
             }
         }
     }
+//    public static void performTransactions( Account receiverAccount, double transferAmount) {
+//        receiverAccount.transfer( receiverAccount.getAccountID(), transferAmount,allCustomers);
+//    }
+
+
 
     private static void performTransactions(Account account, Scanner scanner) {
         while (true) {
             System.out.println("Choose a transaction:");
             System.out.println("1. Deposit");
             System.out.println("2. Withdraw");
-            System.out.println("3. Transfer");
-            System.out.println("4. Display Account Info");
-            System.out.println("5. Exit");
+            System.out.println("3. Display Account Info");
+            System.out.println("4. Exit");
 
             int transactionChoice = scanner.nextInt();
             scanner.nextLine(); // consume the newline
@@ -475,18 +591,10 @@ public class Bank {
                     break;
 
                 case 3:
-                    System.out.println("Enter recipient's account ID:");
-                    String recipientAccountID = scanner.nextLine();
-                    System.out.println("Enter the transfer amount:");
-                    double transferAmount = scanner.nextDouble();
-                    scanner.nextLine(); // consume newline
-                    account.transfer(account.getAccountID(), recipientAccountID, transferAmount);
-                    break;
-                case 4:
                     account.displayAccountInfo();
                     break;
 
-                case 5:
+                case 4:
                     System.out.println("Exiting transactions!");
                     return;
 
