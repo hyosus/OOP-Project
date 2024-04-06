@@ -342,13 +342,13 @@ public class Account {
         System.out.println("Transfer successful: $" + amount + " from " + this.accountID + " to " + recipientAccount.getAccountID());
     }
 
-    //overload
+    // Overloading transfer method
     public void transfer(Account recipientAccount, double amount) {
         updateAccountInCsv(this.accountID, this.balance);
         updateAccountInCsv(recipientAccount.getAccountID(), recipientAccount.getBalance());
     }
 
-    // update balance in csv
+    // Update balance in csv
     public void updateAccountInCsv(String accountID, double balance) {
         final String CSV_FILE = "customers.csv";
         String tempFile = "temp.csv";
@@ -389,6 +389,7 @@ public class Account {
             System.err.println("Error updating account in CSV file: " + e.getMessage());
         }
     }
+    
     private void recordTransaction(String transactionType, double amount, String recipientAccountID) {
         String senderAccountID = this.accountID;
         String date = LocalDate.now().toString();
@@ -400,21 +401,6 @@ public class Account {
             recipientAccountID = "";
         }
         logTransaction(transactionType, senderAccountID, recipientAccountID, amount, date);
-    }
-
-    public void refreshAccountData(String accountID) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split(",");
-                if (data[0].equals(accountID)) {
-                    this.balance = Double.parseDouble(data[2]);
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error refreshing account data: " + e.getMessage());
-        }
     }
 
     // Log a transaction to the transactions CSV file
