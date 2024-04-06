@@ -33,10 +33,12 @@ public class CreditCardAccount extends Account {
         this.creditCard = creditCard;
     }
 
+    // Get credit card object
     public g17_CRD getCreditCard() {
         return this.creditCard;
     }
 
+    // Generate random account ID
     public static String generateRandomDefaultAccountID() {
         String id;
         do {
@@ -47,6 +49,7 @@ public class CreditCardAccount extends Account {
         return id;
     }
 
+    // Generate random credit card number
     public static Long generateRandomCreditCardNumber() {
         long lowerBound = 1000000000000000L;
         long upperBound = 9000000000000000L;
@@ -54,6 +57,7 @@ public class CreditCardAccount extends Account {
         return randomCreditCardNumber;
     }
 
+    // Method to create an account with credit card
     public static void createCreditCardAccount(Scanner scanner, Customer customer) {
 
         System.out.println("Select the type of credit card you want to apply for:");
@@ -111,6 +115,7 @@ public class CreditCardAccount extends Account {
         }
     }
 
+    // Used when creating an account to store it in the CSV file
     public String toCSV(Customer customer) {
         return this.getAccountID() + "," + customer.getCustomerID() + "," + customer.getName() + "," + creditCard.getcreditCardNumber() + "," + creditCard.getCompanyIssuer() + "," + creditCard.getCVV() + "," + creditCard.getCardPin() + "," + creditCard.getExpiryDate() + "," + creditCard.getCreditLimit() + "," + this.getAccountType() + "," + creditCard.getDailyLimit() + "," + this.getBalance();
     }
@@ -141,7 +146,7 @@ public class CreditCardAccount extends Account {
         } while (true);
     }
 
-    //overloaded method to update csv
+    // Overloaded method to update csv for account that is paying outstanding amount
     public void updateAccountInCsv(CreditCardAccount ccAcount, BigDecimal newBalance, BigDecimal amount) {
         
         List<List<String>> records = new ArrayList<>();
@@ -177,6 +182,7 @@ public class CreditCardAccount extends Account {
 
     }
 
+    // Display account information
     public void displayAccountInfo() {
         System.out.println("~~~~~~~~~~~~~ This is your Credit Card Info ~~~~~~~~~~~~~");
         System.out.println("Credit Card Number: " + this.creditCard.getcreditCardNumber());
@@ -191,6 +197,7 @@ public class CreditCardAccount extends Account {
         
     }
 
+    // Sub-menu for credit card account
     public void creditCardAccountMenu(Scanner scanner){        
         do {
             System.out.println("~~~~~~~~~~~~~ Credit Card Account Menu ~~~~~~~~~~~~~");
