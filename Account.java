@@ -275,59 +275,46 @@ public class Account {
         }
     }
 
-
-    public void transfer(String senderAccountID, String recipientAccountID, double amount) {
-        String customerCSVFile = "customers.csv";
-        List<String> lines = new ArrayList<>();
-        boolean updateNeeded = false;
-        boolean senderFound = false, recipientFound = false;
-        double senderNewBalance = -1, recipientNewBalance = -1;
-
-        // Read and update balances in 'customer.csv'
-        try (BufferedReader reader = new BufferedReader(new FileReader(customerCSVFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split(",");
-                for (int i = 0; i < data.length; i++) {
-                    if (data[i].equals(senderAccountID) && Double.parseDouble(data[i + 1]) >= amount) {
-                        senderNewBalance = Double.parseDouble(data[i + 1]) - amount;
-                        data[i + 1] = String.valueOf(senderNewBalance);
-                        senderFound = true;
-                    } else if (data[i].equals(recipientAccountID)) {
-                        recipientNewBalance = Double.parseDouble(data[i + 1]) + amount;
-                        data[i + 1] = String.valueOf(recipientNewBalance);
-                        recipientFound = true;
-                    }
-                }
-                lines.add(String.join(",", data));
-            }
-
-            if (senderFound && recipientFound) {
-                updateNeeded = true;
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading the customer CSV file: " + e.getMessage());
+    public void transfer(String recipientAccountID, double amount) {
+        if (amount > this.balance) {
+            System.out.println("Insufficient funds for the transfer.");
+            return;
         }
 
-        // Write updated balances back to 'customer.csv'
-        if (updateNeeded) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(customerCSVFile))) {
-                for (String updatedLine : lines) {
-                    writer.write(updatedLine);
-                    writer.newLine();
-                }
-            } catch (IOException e) {
-                System.err.println("Error writing to the customer CSV file: " + e.getMessage());
-                return; // Exit if writing failed
-            }
-
-            // Log the transfer in 'transactions.csv'
-            logTransaction("Transfer", senderAccountID, recipientAccountID, amount, LocalDate.now().toString());
-            System.out.println("Transfer successful. $" + amount + " transferred from " + senderAccountID + " to " + recipientAccountID);
-        } else {
-            if (!senderFound) System.out.println("Sender account not found or insufficient funds.");
-            if (!recipientFound) System.out.println("Recipient account not found.");
+        Customer recipientCustomer = Bank.findCustomerByAccountID(recipientAccountID, Bank.loadAllCustomers());
+        if (recipientCustomer == null) {
+            System.out.println("Recipient account not found.");
+            return;
         }
+
+        Account recipientAccount = recipientCustomer.getAccounts().stream()
+                .filter(acc -> acc.getAccountID().equals(recipientAccountID))
+                .findFirst()
+                .orElse(null);
+
+        if (recipientAccount == null) {
+            System.out.println("Recipient account not found.");
+            return;
+        }
+
+        // Perform the transfer
+        this.balance -= amount; // Deduct from sender
+        recipientAccount.setBalance(recipientAccount.getBalance() + amount); // Add to the recipient
+        updateAccountInCsv(recipientAccountID, recipientAccount.balance);
+        System.out.println(recipientAccountID + recipientAccount.balance);
+        updateAccountInCsv(this.accountID, this.balance);
+
+        // Log the transfer for both accounts and print success message
+        this.recordTransaction("Transfer Out", -amount, recipientAccountID);
+        recipientAccount.recordTransaction("Transfer In", amount, this.accountID);
+
+        System.out.println("Transfer successful: $" + amount + " from " + this.accountID + " to " + recipientAccount.getAccountID());
+    }
+
+    //overload
+    public void transfer(Account recipientAccount, double amount) {
+        updateAccountInCsv(this.accountID, this.balance);
+        updateAccountInCsv(recipientAccount.getAccountID(), recipientAccount.getBalance());
     }
 
     // update balance in csv
@@ -361,8 +348,6 @@ public class Account {
                     pw.println(line);
                 }
             }
-
-
             scanner.close();
             pw.flush();
             pw.close();
@@ -391,6 +376,22 @@ public class Account {
         logTransaction(transactionType, senderAccountID, recipientAccountID, amount, date);
     }
 
+    public void refreshAccountData(String accountID) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[0].equals(accountID)) {
+                    // Assuming the balance is in a specific position, for example
+                    this.balance = Double.parseDouble(data[2]); // Adjust index based on actual CSV structure
+                    // Update any other relevant fields here
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error refreshing account data: " + e.getMessage());
+        }
+    }
 
     // logTransaction method
     private void logTransaction(String transactionType, String senderAccountID, String recipientAccountID, double amount, String date) {
