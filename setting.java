@@ -125,8 +125,10 @@ public class setting {
                             }
                             else
                             {
+                                String oldUsername = parts[1];
                                 parts[1] = newUsername;
                                 changesMade = true;
+                                System.out.println("Username has been changed from " + oldUsername + " to " + newUsername);
                                 break;
                             }
                         }while(true);
@@ -146,12 +148,14 @@ public class setting {
                             }
                             else
                             {
+                                String oldPassword = parts[2];
                                 parts[2] = newPassword; 
                                 String secretKey = parts[22];
                                 String salt = parts[23];
                                 String encryptedPassword = AES.encrypt(newPassword, secretKey, salt);
                                 parts[21] = encryptedPassword;
                                 changesMade = true;
+                                System.out.println("Password has been changed from " + oldPassword + " to " + newPassword);
                                 break;
                             }
                         }while(true);
