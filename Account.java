@@ -48,7 +48,53 @@ public class Account {
         //allAccounts.add(this);
     }
 
+    
+    public double getBalance(){
+        return balance;
+    }
+    public void setBalance(double balance){
+        this.balance = balance;
+    }
+    public String getAccountID(){
+        return this.accountID;
+    }
+    public String getAccountType(){
+        return this.accountType;
+    }
 
+    public void setTransferLimit(double amount){
+        this.transferLimit = amount;
+    }
+    public double getTransferLimit()
+    {
+        return this.transferLimit;
+    }
+
+    public static double getDefaultTransferLimit(){
+        return TRANSFER_LIMIT;
+    }
+
+    public void setWithdrawLimit(double amount){
+        this.withdrawalLimit= amount;
+    }
+    public double getWithdrawLimit()
+    {
+        return this.withdrawalLimit;
+    }
+
+    public static double getDefaultWithdrawLimit(){
+        return WITHDRAWAL_LIMIT;
+    }
+
+    public void setAccountType(String type){
+        this.accountType = type;
+    }
+    public void setLocalWithdrawLimit(double localWithdrawLimit) {
+    }
+    public void setOverseasWithdrawLimit(double overseasWithdrawLimit) {
+    }
+    
+    // Generate a random account ID
     public static String generateRandomDefaultAccountID() {
         String id;
         do {
@@ -60,6 +106,7 @@ public class Account {
     }
 
 
+    // Generate a random account ID depending on the account type
     public static String generateRandomNewAccountID(String accountType) {
         String prefix = "";
         switch (accountType) {
@@ -75,15 +122,15 @@ public class Account {
         Random random = new Random();
         String newAccountID;
         do {
-            int fiveDigitNumber = 10000 + random.nextInt(90000); // Generate a random 6-digit number
+            int fiveDigitNumber = 10000 + random.nextInt(90000);
             newAccountID = prefix + fiveDigitNumber;
-        } while (Bank.idExistsInCsv(newAccountID, CUSTOMERS_CSV_FILE)); // Keep generating a new account ID until it doesn't exist in the CSV file
+        } while (Bank.idExistsInCsv(newAccountID, CUSTOMERS_CSV_FILE));
 
 
         return newAccountID;
     }
 
-
+    // Create a new account for the customer
     public static void createNewAccount(Scanner scanner, Customer customer) {
         System.out.println("Select the type of account to create:");
         System.out.println("1. Savings");
@@ -94,7 +141,7 @@ public class Account {
         while (true) {
             System.out.print("Enter the number of the account type: ");
             accountTypeIndex = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
+            scanner.nextLine();
             if (accountTypeIndex == 1 || accountTypeIndex == 2) {
                 break;
             } else {
@@ -109,7 +156,7 @@ public class Account {
         if (customer.hasAccountType(accountType)) {
             System.out.println("You already have a " + accountType + " account.");
         } else {
-            String accountID = generateRandomNewAccountID(accountType); // Generate a new account ID
+            String accountID = generateRandomNewAccountID(accountType);
             Account newAccount = new Account(accountID, accountType, 0);
             customer.getAccounts().add(newAccount);
             System.out.println("Created a new " + accountType + " account with ID " + accountID);
@@ -120,6 +167,7 @@ public class Account {
     }
 
 
+    // Create a new loan for the account
     public void createLoan(String csvFile) {
         Random randomNo = new Random();
         int loanID = randomNo.nextInt(100000);
@@ -132,12 +180,8 @@ public class Account {
             return;
         }
 
-
-        // Add the new loan to the loan list
         this.loanList.add(newLoan);
 
-
-        // Write the new loan to the CSV file
         try (FileWriter writer = new FileWriter(csvFile, true)) {
             writer.append(this.accountID).append(',');
             writer.append(newLoan.getloanStatus()).append(',');
@@ -154,19 +198,16 @@ public class Account {
         }
     }
 
-
     public void deposit(double amount) {
-        this.balance += amount; // Update the local balance
+        this.balance += amount;
         System.out.println("Deposited $" + amount + " into account " + this.accountID);
 
-        // Update the customer's balance in 'customer.csv'
         updateAccountInCsv(this.accountID, this.balance);
 
-        // Log the deposit transaction; since it's a deposit, recipientAccountID is empty
         recordTransaction("Deposit", amount, "");
     }
 
-
+    // Deposit money into the account
     public static void depositToAccount(Scanner scanner, Account depositAccount) {
         if (depositAccount == null) {
             System.out.println("No account selected.");
@@ -176,17 +217,15 @@ public class Account {
 
         System.out.print("Enter deposit amount: ");
         double depositAmount = scanner.nextDouble();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
 
 
         depositAccount.deposit(depositAmount);
         depositAccount.updateAccountInCsv(depositAccount.getAccountID(), depositAccount.getBalance());
-        //writeAccountsToCSV(depositAccount.getAccountID(), depositAccount.getBalance());
     }
 
 
     public void withdraw(double amount) {
-        // Reset the withdrawal limit if a new day has arrived
         if (lastResetTime.toLocalDate().isBefore(LocalDate.now())) {
             lastResetTime = LocalDateTime.now();
         }
@@ -197,18 +236,18 @@ public class Account {
         }
 
         if (amount <= balance) {
-            balance -= amount; // Deduct the amount from the account balance
-            withdrawalLimit -= amount; // Update the remaining daily withdrawal limit
+            balance -= amount;
+            withdrawalLimit -= amount; 
             System.out.printf("Successfully withdrawn $%.2f. Remaining daily limit: $%.2f\n", amount, withdrawalLimit);
 
-            updateAccountInCsv(accountID, balance); // Update the new balance in 'customer.csv'
-            recordTransaction("Withdrawal", -amount, ""); // Log the withdrawal
+            updateAccountInCsv(accountID, balance);
+            recordTransaction("Withdrawal", -amount, "");
         } else {
             System.out.println("Insufficient funds.");
         }
     }
 
-
+    // Withdraw money from the account
     public static void withdrawFromAccount(Scanner scanner, Account withdrawAccount) {
         if (withdrawAccount == null) {
             System.out.println("No account selected.");
@@ -218,15 +257,14 @@ public class Account {
 
         System.out.print("Enter withdrawal amount: ");
         double withdrawalAmount = scanner.nextDouble();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine();
 
 
         withdrawAccount.withdraw(withdrawalAmount);
         withdrawAccount.updateAccountInCsv(withdrawAccount.getAccountID(), withdrawAccount.getBalance());
-        //writeAccountsToCSV(withdrawAccount.getAccountID(), withdrawAccount.getBalance());
     }
-    // Reads the current limit and checks if a reset is needed
-// Then updates the balance and limit in the CSV after withdrawal
+
+    // Update the withdrawal limit and balance after a withdrawal
     public void updateWithdrawalLimitAndBalance(String accountID, double amountToWithdraw) {
         String tempFile = "temp.csv";
         boolean updated = false;
@@ -243,24 +281,21 @@ public class Account {
                     LocalDateTime lastResetTime = LocalDateTime.parse(data[3]);
                     LocalDateTime now = LocalDateTime.now();
 
-                    // Check if we need to reset the limit
                     if (lastResetTime.toLocalDate().isBefore(LocalDate.now())) {
-                        lastWithdrawalLimit = 3000.0;  // Reset to default daily limit
+                        lastWithdrawalLimit = 3000.0; 
                     }
 
-                    // Update balance and withdrawal limit if there's enough balance and within the limit
                     if (currentBalance >= amountToWithdraw && amountToWithdraw <= lastWithdrawalLimit) {
                         currentBalance -= amountToWithdraw;
                         lastWithdrawalLimit -= amountToWithdraw;
-                        updated = true;  // Mark as updated
+                        updated = true;
 
-                        // Update data array with new values
                         data[1] = String.valueOf(currentBalance);
                         data[2] = String.valueOf(lastWithdrawalLimit);
-                        data[3] = now.toString();  // Update last reset time
+                        data[3] = now.toString();
                     }
                 }
-                // Write updated line or original line back to temp file
+
                 writer.write(String.join(",", data));
                 writer.newLine();
             }
@@ -268,13 +303,13 @@ public class Account {
             System.err.println("Error processing account withdrawal: " + e.getMessage());
         }
 
-        // Replace original CSV with updated data if any change was made
         if (updated) {
             new File(CUSTOMERS_CSV_FILE).delete();
             new File(tempFile).renameTo(new File(CUSTOMERS_CSV_FILE));
         }
     }
 
+    // Transfer money to another account
     public void transfer(String recipientAccountID, double amount) {
         if (amount > this.balance) {
             System.out.println("Insufficient funds for the transfer.");
@@ -297,14 +332,12 @@ public class Account {
             return;
         }
 
-        // Perform the transfer
-        this.balance -= amount; // Deduct from sender
-        recipientAccount.setBalance(recipientAccount.getBalance() + amount); // Add to the recipient
+        this.balance -= amount;
+        recipientAccount.setBalance(recipientAccount.getBalance() + amount);
         updateAccountInCsv(recipientAccountID, recipientAccount.balance);
         System.out.println(recipientAccountID + recipientAccount.balance);
         updateAccountInCsv(this.accountID, this.balance);
 
-        // Log the transfer for both accounts and print success message
         this.recordTransaction("Transfer Out", -amount, recipientAccountID);
         recipientAccount.recordTransaction("Transfer In", amount, this.accountID);
 
@@ -359,20 +392,15 @@ public class Account {
         }
     }
     private void recordTransaction(String transactionType, double amount, String recipientAccountID) {
-        String senderAccountID = this.accountID; // This account is the sender for outgoing transactions
+        String senderAccountID = this.accountID;
         String date = LocalDate.now().toString();
 
-        // For transactions that don't involve a recipient, such as deposits or withdrawals, recipientAccountID can be null or an empty string.
         if (recipientAccountID == null || recipientAccountID.isEmpty()) {
-            // If it's a withdrawal, adjust the sign of the amount for logging
             if ("Withdrawal".equals(transactionType)) {
                 amount = -amount;
             }
-            // For deposits and withdrawals, only the sender account is involved
-            recipientAccountID = ""; // Log with an empty string for recipient account ID
+            recipientAccountID = "";
         }
-
-        // Now use the adapted logTransaction method to log the transaction details.
         logTransaction(transactionType, senderAccountID, recipientAccountID, amount, date);
     }
 
@@ -382,9 +410,7 @@ public class Account {
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data[0].equals(accountID)) {
-                    // Assuming the balance is in a specific position, for example
-                    this.balance = Double.parseDouble(data[2]); // Adjust index based on actual CSV structure
-                    // Update any other relevant fields here
+                    this.balance = Double.parseDouble(data[2]);
                     break;
                 }
             }
@@ -393,13 +419,12 @@ public class Account {
         }
     }
 
-    // logTransaction method
+    // Log a transaction to the transactions CSV file
     private void logTransaction(String transactionType, String senderAccountID, String recipientAccountID, double amount, String date) {
         File transactionsFile = new File(TRANSACTIONS_CSV_FILE);
         boolean fileExistsAndNotEmpty = transactionsFile.exists() && transactionsFile.length() > 0;
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(transactionsFile, true))) {
-            // Check if the file is newly created or empty, and then write the headers
             if (!fileExistsAndNotEmpty) {
                 String header = "TransactionID,TransactionType,SenderAccountID,RecipientAccountID,Amount,DateTime\n";
                 bw.write(header);
@@ -415,21 +440,22 @@ public class Account {
     }
 
 
-
+    // Generate a random transaction ID
     private String generateRandomTransactionID() {
         Random rand = new Random();
-        int transactionNumber = 100000 + rand.nextInt(900000); // Generate a 6-digit random number
-        String prefix = "TRX"; // Prefix for transaction IDs
+        int transactionNumber = 100000 + rand.nextInt(900000); 
+        String prefix = "TRX";
         return prefix + transactionNumber;
     }
 
+    // Update the CSV file with the new account ID and balance
     public void updateCsvWithNewAccount(String customerID, String accountType, String accountID, double balance) {
         String tempFile = "temp.csv";
         File oldFile = new File("customers.csv");
         File newFile = new File(tempFile);
 
         try {
-            FileWriter fw = new FileWriter(tempFile, false); // Open in overwrite mode
+            FileWriter fw = new FileWriter(tempFile, false);
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter pw = new PrintWriter(bw);
             Scanner fileScanner = new Scanner(new File("customers.csv"));
@@ -441,13 +467,10 @@ public class Account {
 
 
                 if (data.get(0).equals(customerID)) {
-                    // Ensure the data list has enough columns
                     while (data.size() <= 23) {
                         data.add("");
                     }
 
-
-                    // Update the specific columns with the new account ID and balance
                     int columnIndex = accountType.equals("Savings") ? 11 : 13;
                     data.set(columnIndex, accountID);
                     data.set(columnIndex + 1, String.valueOf(balance));
@@ -470,16 +493,14 @@ public class Account {
         }
     }
 
-
+    // Load loans from the CSV file
     public void loadLoans(String filename, String accountID) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
-                // Check if the accountID matches
                 if (data[0].equals(accountID)) {
-                    // Create a new Loan object and add it to the list
                     int loanID = Integer.parseInt(data[2]);
                     String loanType = data[3];
                     int loanTerm = Integer.parseInt(data[4]);
@@ -487,24 +508,19 @@ public class Account {
                     double interestRate = Double.parseDouble(data[6]);
                     Loan loan = new Loan(loanID, loanType, loanTerm, principalLoanAmount, interestRate);
 
-
-                    // Set the other attributes of the Loan object
                     loan.setLoanStatus(data[1]);
                     loan.setRemainingDebt(Double.parseDouble(data[7]));
                     loan.setStartDate(LocalDate.parse(data[8], formatter));
 
-
-                    // Add the loan to the loanList
                     loanList.add(loan);
                 }
             }
         } catch (IOException e) {
-            // Handle exception
         }
     }
 
 
-    //display
+    // Display the account(s) information a customer has
     public void displayAccountInfo() {
         System.out.println("~~~~~~~~~~~~~ This is your Account Info ~~~~~~~~~~~~~");
         System.out.printf("%-20s %s%n", "Account ID:", accountID);
@@ -515,7 +531,7 @@ public class Account {
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
-
+    // Display number of loans
     public void displayLoans() {
         if (loanList.isEmpty()) {
             System.out.println("No loans available.");
@@ -529,63 +545,6 @@ public class Account {
         for (Loan loan : loanList) {
             loan.getLoanInfo();
         }
-    }
-
-
-    // public static Account getAccountByID(String accountID) {
-    //    for (Account account : allAccounts) {
-    //       if (account.getAccountID().equals(accountID)) {
-    //          return account;
-    //       }
-    //    }
-    //    return null; // Account not found
-    // }
-
-
-    // getter setter
-    public double getBalance(){
-        return balance;
-    }
-    public void setBalance(double balance){
-        this.balance = balance;
-    }
-    public String getAccountID(){
-        return this.accountID;
-    }
-    public String getAccountType(){
-        return this.accountType;
-    }
-
-    public void setTransferLimit(double amount){
-        this.transferLimit = amount;
-    }
-    public double getTransferLimit()
-    {
-        return this.transferLimit;
-    }
-
-    public static double getDefaultTransferLimit(){
-        return TRANSFER_LIMIT;
-    }
-
-    public void setWithdrawLimit(double amount){
-        this.withdrawalLimit= amount;
-    }
-    public double getWithdrawLimit()
-    {
-        return this.withdrawalLimit;
-    }
-
-    public static double getDefaultWithdrawLimit(){
-        return WITHDRAWAL_LIMIT;
-    }
-
-    public void setAccountType(String type){
-        this.accountType = type;
-    }
-    public void setLocalWithdrawLimit(double localWithdrawLimit) {
-    }
-    public void setOverseasWithdrawLimit(double overseasWithdrawLimit) {
     }
 }
 
@@ -616,6 +575,7 @@ class Transaction {
         this.date = date;
     }
 
+    // Display the details of the transaction
     public String getDetails() {
         return "Transaction ID: " + transactionId +
                 ", Type: " + transactionType +
@@ -623,7 +583,6 @@ class Transaction {
                 ", Date: " + date +
                 ", Account ID: " + accountID;
     }
-
 
     public String getTransactionId() {
         return String.valueOf(this.transactionId);
@@ -636,7 +595,6 @@ class Transaction {
     public double getAmount(){
         return this.amount;
     }
-
 
     public CharSequence getDate() {
         return (CharSequence) date;

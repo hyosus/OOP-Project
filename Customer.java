@@ -120,6 +120,7 @@ public class Customer {
         return false;
     }
 
+    // Generate a random customer ID
     public static String generateRandomCustomerID() {
         String id;
         do {
@@ -130,6 +131,7 @@ public class Customer {
         return id;
     }
 
+// Load account(s) a customer has
 public void loadAccounts(String filename, String customerID) {
     try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
         String line;
@@ -139,14 +141,14 @@ public void loadAccounts(String filename, String customerID) {
                 for (int i = 9; i < parts.length-3; i += 4) {
                     String accountId = parts[i];
                     if (accountId.isEmpty()) {
-                        continue; // Skip this account if the ID is empty
+                        continue;
                     }
 
                     double balance = 0;
                     double transferLimit = 0;
                     double withdrawalLimit = 0;
                     if (!parts[i + 1].isEmpty()) {
-                        balance = Double.parseDouble(parts[i + 1]); // Load the balance from the CSV file
+                        balance = Double.parseDouble(parts[i + 1]); 
                     }
                     if (!parts[i + 2].isEmpty()) {
                         transferLimit = Double.parseDouble(parts[i + 2]);
@@ -173,7 +175,7 @@ public void loadAccounts(String filename, String customerID) {
                             accountType = "Investment";
                             break;
                         default:
-                            continue; // skip this account if the type is unknown
+                            continue;
                     }
                     // Load normal accounts
                     Account account = new Account(accountId, accountType, balance);
@@ -183,7 +185,7 @@ public void loadAccounts(String filename, String customerID) {
                         this.accounts.add(account);
                     }
                 }
-                break; // exit the loop once the customer is found
+                break;
             }
         }
     } catch (IOException e) {
@@ -191,9 +193,10 @@ public void loadAccounts(String filename, String customerID) {
     }
 }
 
+// Load credit card accounts from a CSV file
 public void loadCreditCards(String filename, String customerID) {
     try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-        reader.readLine(); // Skip the header line
+        reader.readLine();
         String line;
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split(",");
@@ -227,6 +230,7 @@ public void loadCreditCards(String filename, String customerID) {
     }
 }
 
+// Prompt the user to choose an existing account
     public Account promptAccount(Scanner scanner) {
         if (this.accounts.isEmpty()) {
             System.out.println("No accounts available.");
@@ -250,6 +254,7 @@ public void loadCreditCards(String filename, String customerID) {
     return this.accounts.get(choice - 1);
 }
 
+// Prompt the user to choose a credit card account
 public CreditCardAccount promptCreditCardAccount(Scanner scanner) {
     if (this.creditCardAccounts.isEmpty()) {
         System.out.println("No credit card to show.");
@@ -277,7 +282,7 @@ public CreditCardAccount promptCreditCardAccount(Scanner scanner) {
         pin = scanner.nextInt();
     
         if (pin == -1) {
-            return null; // User chose to cancel
+            return null;
         }
     
         validPin = this.creditCardAccounts.get(choice - 1).getCreditCard().isCardPinValid(pin);
@@ -289,6 +294,7 @@ public CreditCardAccount promptCreditCardAccount(Scanner scanner) {
     return this.creditCardAccounts.get(choice - 1);
 }
 
+// Log in a customer using their username and password
 public static Customer loadCustomerByUsernameAndPassword(String username, String password, String filename) {
     try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
         String line;
@@ -299,7 +305,6 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
                 String secretKey = parts[22];
                 String salt = parts[23];
 
-                // Decrypt the password from the CSV file
                 String decryptedPassword = AES.decrypt(encryptedPassword, secretKey, salt);
                 g17_SYE newOTP = new g17_SYE(username);
                 Scanner scanner = new Scanner(System.in);
@@ -307,7 +312,6 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
                 int otp = scanner.nextInt();
                 scanner.nextLine();
 
-                // Compare the decrypted password with the entered password
                 if (password.equals(decryptedPassword)) {
                     g17_SYE.OTPStatus status = newOTP.OTPValidation(otp);
                     if (status == g17_SYE.OTPStatus.VERIFIED) {
@@ -322,7 +326,7 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
                         return new Customer(customerId, name, nric, dob, contactNumber, email,  address);
                     } else if (status == g17_SYE.OTPStatus.EXPIRED) {
                         System.out.println("OTP has expired. A new OTP will be sent.");
-                        newOTP = new g17_SYE(username); // Recreate the object to send a new OTP
+                        newOTP = new g17_SYE(username);
                     } else {
                         System.out.println("Invalid OTP. Please try again.");
                     }
@@ -333,6 +337,6 @@ public static Customer loadCustomerByUsernameAndPassword(String username, String
         System.err.println("Error reading from CSV file: " + e.getMessage());
     }
 
-    return null; // Return null if username and password not found
+    return null;
 }
 }
