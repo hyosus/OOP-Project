@@ -68,7 +68,7 @@ public class CreditCardAccount extends Account {
         while (true) {
             System.out.print("Enter the number of the account type: ");
             accountTypeIndex = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
+            scanner.nextLine();
             if (accountTypeIndex == 1 || accountTypeIndex == 2) {
                 break;
             } else {
