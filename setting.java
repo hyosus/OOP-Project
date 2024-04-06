@@ -11,41 +11,30 @@ import com.bank.components.security.*;
 
 
 public class setting {
-    public setting() {
-    }
     public static double MAX_BANK_TRANSFER_LIMIT = 8000.00;
     private static final String CUSTOMERS_CSV_FILE = "customers.csv";
-    //Customer settings
-    public void updateName(Customer customer, String name)
-    {
-        String oldName = customer.getName();
-        customer.setName(name);
-        System.out.println("Name has been changed from " + oldName + " to " + name);
+    
+    //Empty constructor
+    public setting() {
     }
-    public void updateNRIC(Customer customer, String nric)
-    {
-        String oldNRIC = customer.getNric();
-        customer.setnric(nric);
-        System.out.println("NRIC has been changed from " + oldNRIC + " to " + nric);
-    }
-    public void updateDateOfBirth(Customer customer, LocalDate birthDate)
-    {
-        LocalDate oldBirthDate = customer.getDateOfBirth();
-        customer.setDateofBirth(birthDate);
-        System.out.println("Date of Birth has been changed from " + oldBirthDate + " to " + birthDate);
-    }
+    
+    //Customer
+
+    //update contact number
     public void updateContactNumber(Customer customer, int contactNumber)
     {
         int oldContactNumber = customer.getContactNumber();
         customer.setConteactNumber(contactNumber);
         System.out.println("Contact Number has been changed from " + oldContactNumber + " to " + contactNumber);
     }
+    //update email
     public void updateEmail(Customer customer, String email)
     {
         String oldEmail = customer.getEmail();
         customer.setEmail(email);
         System.out.println("Email has been changed from " + oldEmail + " to " + email);
     }
+    //update address
     public void updateAddress(Customer customer, String address)
     {
         String oldAddress = customer.getAddress();
@@ -54,12 +43,15 @@ public class setting {
     }
     
     //Account
+
+    //update transfer limit
     public void updateTransferLimit(Account account, double amount)
     {
         double oldTransferLimit = account.getTransferLimit();
         account.setTransferLimit(amount);
         System.out.println("Transfer limit has been changed from " + oldTransferLimit + " to " + amount);
     }
+    //update withdraw limit 
     public void updateWithdrawLimit(Account account, double amount)
     {
         double oldWithdrawLimit = account.getWithdrawLimit();
@@ -67,26 +59,7 @@ public class setting {
         System.out.println("Withdraw limit has been changed from " + oldWithdrawLimit + " to " + amount);
     }
 
-    private double getValidAmount(Scanner scanner) {
-        while (true) {
-            try {
-                System.out.print("Enter the amount: ");
-                double amount = Double.parseDouble(scanner.nextLine());
-                if (amount <= 0) {
-                    System.out.println("Amount must be greater than 0. Please try again.");
-                    continue; // This will loop back, allowing the user another chance to enter a valid amount
-                }
-                if (amount > MAX_BANK_TRANSFER_LIMIT) {
-                    System.out.println("Limit cannot exceed MAX_BANK_TRANSFER_LIMIT. Please approach a bank staff to change the limit.");
-                    return -1; // Returning a sentinel value to indicate the operation should be aborted
-                }
-                return amount; // Valid amount entered within the accepted range
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid number.");
-            }
-        }
-    }
-    
+    //Customer setting menu
     public void customerSettingMenu(Customer customer) {
     Scanner scanner = new Scanner(System.in);
     List<String> lines = new ArrayList<>();
@@ -95,7 +68,8 @@ public class setting {
     try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE))) {
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith(customer.getCustomerID() + ",")) { // Assuming customerId is at the start of each line
+            //look for customer information 
+            if (line.startsWith(customer.getCustomerID() + ",")) { 
                 System.out.println("\nCustomer system");
                 System.out.println("1. Change username");
                 System.out.println("2. Change password");
@@ -106,11 +80,12 @@ public class setting {
                 System.out.print("Enter your choice: ");
 
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // Consume the newline character
+                scanner.nextLine(); // 
 
                 String[] parts = line.split(",");
                 
                 switch (choice) {
+                    //update username
                     case 1:
                         do{
                             System.out.print("Enter new username: ");
@@ -133,6 +108,7 @@ public class setting {
                             }
                         }while(true);
                         break;
+                    //update password 
                     case 2:
                         do{
                             System.out.print("Enter new password: ");
@@ -160,6 +136,7 @@ public class setting {
                             }
                         }while(true);
                         break;
+                    //update contact number
                     case 3:
                         do{
                             System.out.print("Enter new contact number: ");
@@ -181,6 +158,7 @@ public class setting {
                             }
                         }while(true);
                         break;
+                    //update email
                     case 4: 
                         do
                         {
@@ -203,6 +181,7 @@ public class setting {
                             }
                         }while (true);
                         break;
+                    //update address
                     case 5:
                         do{
                             System.out.print("Enter new address: ");
@@ -230,15 +209,15 @@ public class setting {
                     default:
                         System.out.println("Invalid choice, please enter a valid number.");
                 }
-                line = String.join(",", parts); // Re-join the parts into a full line
+                line = String.join(",", parts); 
             }
-            lines.add(line); // Add the (possibly modified) line to the list
+            lines.add(line); 
         }
     } catch (IOException e) {
         e.printStackTrace();
     }
 
-    // If changes were made, write all lines back to the CSV file
+    //store lines in the file
     if (changesMade) {
         try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, false)) {
             for (String updatedLine : lines) {
@@ -248,10 +227,10 @@ public class setting {
             e.printStackTrace();
         }
         }
-}
+    }
 
     
-
+    //Account setting menu
     public void accountSetting(Customer customer)
     {
         Scanner scanner = new Scanner(System.in);
@@ -266,6 +245,7 @@ public class setting {
                 String[] parts = line.split(",");
                 if(customer.getCustomerID().equals(parts[0]))
                 {
+                    //Default account
                     if(accountChoice.getAccountType().equals("Default")&&
                     parts[9].equals(accountChoice.getAccountID()))
                     {
@@ -279,6 +259,7 @@ public class setting {
                         scanner.nextLine(); // Consume the newline character
 
                         switch (choice) {
+                            //update transfer limit
                             case 1:
                                 do{
                                     System.out.print("Enter new transfer limit: ");
@@ -304,6 +285,7 @@ public class setting {
                                     }
                                 }while(true);
                                 break;
+                            //update withdraw limit
                             case 2:
                                 do{
                                     System.out.print("Enter new withdrawal limit: ");
@@ -337,6 +319,7 @@ public class setting {
                         }
                         line = String.join(",", parts);
                     }
+                //Savings account
                 if(accountChoice.getAccountType().equals("Savings")&&
                     parts[13].equals(accountChoice.getAccountID()))
                     {
@@ -349,6 +332,7 @@ public class setting {
                         scanner.nextLine(); // Consume the newline character
 
                         switch (choice) {
+                            //update transfer limit
                             case 1:
                                 do{
                                     System.out.print("Enter new transfer limit: ");
@@ -374,6 +358,7 @@ public class setting {
                                     }
                                 }while(true);
                                 break;
+                            //update withdraw limit
                             case 2:
                                 do{
                                     System.out.print("Enter new withdrawal limit: ");
@@ -406,6 +391,7 @@ public class setting {
                                 System.out.println("Invalid choice, please enter a valid number.");
                         }line = String.join(",", parts);
                     }
+                //Investment account
                 if(accountChoice.getAccountType().equals("Investment")&&
                     parts[17].equals(accountChoice.getAccountID()))
                     {
@@ -418,6 +404,7 @@ public class setting {
                         scanner.nextLine(); // Consume the newline character
 
                         switch (choice) {
+                            //update transfer limit
                             case 1:
                                 do{
                                     System.out.print("Enter new transfer limit: ");
@@ -443,6 +430,7 @@ public class setting {
                                     }
                                 }while(true);
                                 break;
+                            //update withdraw limit
                             case 2:
                                 do{
                                     System.out.print("Enter new withdrawal limit: ");
@@ -474,32 +462,28 @@ public class setting {
                             default:
                                 System.out.println("Invalid choice, please enter a valid number.");
                         }line = String.join(",", parts);
-                    }
-                lines.add(line);
-            }
+                    }    
+            }lines.add(line);
         }
     }
     catch (IOException e) {
         e.printStackTrace();
     }
-
-        if(changesMade)
-        {
-            try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, false)) {
-                for (String updatedLine : lines) {
-                    writer.write(updatedLine + System.lineSeparator());
-                }
-                }
-            catch (IOException e) {
-                e.printStackTrace();
+    
+    //store lines in the file
+    if(changesMade){
+        try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, false)) {
+            for (String updatedLine : lines) {
+                writer.write(updatedLine + System.lineSeparator());
             }
+            }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         }
     }
-                
-                
-        
 
-    
+    //Setting menu
     public void settingMenu(Customer customer) {
         Scanner scanner = new Scanner(System.in);
     
