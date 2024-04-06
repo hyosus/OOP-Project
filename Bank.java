@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.lang.NumberFormatException;
 import java.security.NoSuchAlgorithmException;
@@ -20,12 +21,13 @@ public class Bank {
     final static String CUSTOMERS_CSV_FILE = "customers.csv";
     final static String LOAN_FILE = "Loans.csv";
     final static String CREDIT_CARD_FILE = "CreditCard.csv";
+    private ForeignExchange foreignExchange;
 
     public Bank(String name) {
         this.name = name;
         loadAllCustomers();
     }
-    
+
     // Method to load all customers and their accounts from the CSV file
     public static List<Customer> loadAllCustomers() {
         List<Customer> customers = new ArrayList<>();
@@ -54,12 +56,11 @@ public class Bank {
         return customers;
     }
 
-
     public static Customer findCustomerByAccountID(String accountID, List<Customer> allCustomers) {
         for (Customer customer : allCustomers) {
             for (Account account : customer.getAccounts()) {
                 if (account.getAccountID().equals(accountID)) {
-                    return customer; 
+                    return customer;
                 }
             }
         }
@@ -187,7 +188,8 @@ public class Bank {
                         ExceptionHandling.handleNumberFormatException();
                     }
                 } else {
-                    System.out.println("Contact number should start with either 8 or 9 and contain exactly 8 digits. Please try again.");
+                    System.out.println(
+                            "Contact number should start with either 8 or 9 and contain exactly 8 digits. Please try again.");
                 }
             }
 
@@ -195,16 +197,19 @@ public class Bank {
             while (true) {
                 email = promptForInput(scanner, "Enter your email: ", "Email");
                 if (ExceptionHandling.handleEmail(email)) {
-                    break;
+                    break; // Exit the loop if email is valid
                 }
             }
 
             address = promptForInput(scanner, "Enter your address: ", "Address");
 
+            String defaultAccountNumber = Account.generateRandomDefaultAccountID(); // generate random account
+
             try (FileWriter writer = new FileWriter(CUSTOMERS_CSV_FILE, true)) {
-                String customerID = Customer.generateRandomCustomerID();
-                String defaultAccountNumber = Account.generateRandomDefaultAccountID();
-                String accountBalance = "0";
+                String customerID = Customer.generateRandomCustomerID(); // generate random customer ID
+
+                // number
+                String accountBalance = "0"; // initial account balance
 
                 writer.append(customerID).append(",")
                         .append(username).append(",")
@@ -230,8 +235,50 @@ public class Bank {
                         .append(encryptedPassword).append(",")
                         .append(secretKey).append(",")
                         .append(salt)
-                        .append("\n");
+                        .append("\n"); // go to next line for next customer
                 writer.close();
+            } catch (IOException e) {
+                ExceptionHandling.handleIOException(e);
+                System.out.println("Failed to create account.");
+                break;
+            }
+
+            try (FileWriter writer2 = new FileWriter("currency_balances.csv", true)) {
+                writer2.append(defaultAccountNumber).append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("0").append(",")
+                        .append("\n"); // go to next line for next customer
+                writer2.flush(); // Ensure buffer is flushed
             } catch (IOException e) {
                 ExceptionHandling.handleIOException(e);
                 System.out.println("Failed to create account.");
@@ -270,6 +317,31 @@ public class Bank {
             } else {
                 System.out.println("Incorrect username or password. Please try again.");
             }
+        }
+    }
+
+    public static void performCurrencyConversion(Scanner scanner, Customer customer, ForeignExchange foreignExchange) {
+        System.out.println("Enter the source currency:");
+        String sourceCurrency = scanner.nextLine().toUpperCase();
+
+        System.out.println("Enter the target currency:");
+        String targetCurrency = scanner.nextLine().toUpperCase();
+
+        System.out.println("Enter the amount to convert:");
+        double amountToConvert = scanner.nextDouble();
+        scanner.nextLine(); // Consume the newline character
+
+        Account account = customer.promptAccount(scanner);
+        if (account != null) {
+            double convertedAmount = account.convertCurrency(foreignExchange, sourceCurrency, targetCurrency,
+                    amountToConvert);
+            if (convertedAmount > 0) {
+                System.out.println("Converted " + amountToConvert + " " + sourceCurrency + " to " + targetCurrency);
+            } else {
+                System.out.println("Currency conversion failed.");
+            }
+        } else {
+            System.out.println("No account selected.");
         }
     }
 
@@ -314,7 +386,8 @@ public class Bank {
                         System.out.println("Select Receiver Account:");
                         Account receiverAccount = customer.promptAccount(loginScanner);
 
-                        if (senderAccount != null && receiverAccount != null && !senderAccount.equals(receiverAccount)) {
+                        if (senderAccount != null && receiverAccount != null
+                                && !senderAccount.equals(receiverAccount)) {
                             System.out.println("Enter the transfer amount:");
                             double transferAmount = loginScanner.nextDouble();
                             loginScanner.nextLine();
@@ -324,7 +397,8 @@ public class Bank {
                             } else {
                                 senderAccount.setBalance(senderAccount.getBalance() - transferAmount);
                                 receiverAccount.setBalance(receiverAccount.getBalance() + transferAmount);
-                                System.out.println("Transfer successful: $" + transferAmount + " from " + senderAccount.getAccountID() + " to " + receiverAccount.getAccountID());
+                                System.out.println("Transfer successful: $" + transferAmount + " from "
+                                        + senderAccount.getAccountID() + " to " + receiverAccount.getAccountID());
 
                                 senderAccount.transfer(receiverAccount, transferAmount);
                             }
@@ -332,7 +406,7 @@ public class Bank {
                             System.out.println("Invalid accounts selected for transfer.");
                         }
 
-                        } else if (transferOption == 2) {
+                    } else if (transferOption == 2) {
                         System.out.println("Select Sender Account:");
                         Account senderAccount = customer.promptAccount(loginScanner);
                         if (senderAccount == null) {
@@ -363,6 +437,59 @@ public class Bank {
                     }
                 case 4:
                     // Currency Exchange
+                    // Currency Exchange submenu
+                    while (true) {
+                        System.out.println("Currency Exchange:");
+                        System.out.println("1. View Exchange Rates");
+                        System.out.println("2. Currency Conversion");
+                        System.out.println("3. Back to main menu");
+
+                        System.out.print("Your choice: ");
+                        int exchangeChoice = loginScanner.nextInt();
+                        loginScanner.nextLine();
+                        switch (exchangeChoice) {
+                            case 1:
+                                // View Exchange Rates
+                                try {
+                                    // Instantiate ForeignExchange class
+                                    ForeignExchange foreignExchange = new ForeignExchange();
+                                    foreignExchange.ECBExchangeRates();
+
+                                    Map<String, Double> rates = foreignExchange.getAllRates();
+                                    if (rates != null && !rates.isEmpty()) {
+                                        System.out.println("Exchange Rates:");
+                                        System.out.println("---------------");
+                                        for (Map.Entry<String, Double> entry : rates.entrySet()) {
+                                            System.out.println(entry.getKey() + ": " + entry.getValue());
+                                        }
+                                    } else {
+                                        System.out.println("No exchange rates available.");
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+                            case 2:
+                                // Perform Currency Conversion
+                                try {
+                                    ForeignExchange foreignExchange = new ForeignExchange();
+                                    performCurrencyConversion(loginScanner, customer, foreignExchange);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                break;
+                            case 3:
+                                // Back to main menu
+                                break;
+                            default:
+                                System.out.println("Invalid choice. Please choose a valid option.");
+                                break;
+                        }
+                        if (exchangeChoice == 3) {
+                            break; // Exit the currency exchange submenu
+                        }
+                    }
                     break;
                 case 5:
                     // Credit Card
@@ -413,14 +540,14 @@ public class Bank {
                 case 1:
                     System.out.println("Enter the deposit amount:");
                     double depositAmount = scanner.nextDouble();
-                    scanner.nextLine(); 
+                    scanner.nextLine();
                     account.deposit(depositAmount);
                     break;
 
                 case 2:
                     System.out.println("Enter the withdrawal amount:");
                     double withdrawalAmount = scanner.nextDouble();
-                    scanner.nextLine(); 
+                    scanner.nextLine();
                     account.withdraw(withdrawalAmount);
                     break;
 
@@ -458,7 +585,7 @@ public class Bank {
                 {
                     showLoginMenu(login());
                 }
-                break;
+                    break;
                 case 3: // Exit
                     System.out.println("Exiting...");
                     mainscanner.close();

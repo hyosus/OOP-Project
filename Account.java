@@ -10,10 +10,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
-
 
 public class Account {
     private String transactionID;
@@ -35,8 +36,7 @@ public class Account {
 
     private LocalDateTime lastResetTime = LocalDateTime.now();
 
-
-    public Account(String accountID, String accountType, double balance){
+    public Account(String accountID, String accountType, double balance) {
         this.transferLimit = TRANSFER_LIMIT;
         this.accountType = accountType;
         this.withdrawalLimit = WITHDRAWAL_LIMIT;
@@ -46,52 +46,56 @@ public class Account {
         this.transactionList = new ArrayList<>();
     }
 
-    
-    public double getBalance(){
+    public double getBalance() {
         return balance;
     }
-    public void setBalance(double balance){
+
+    public void setBalance(double balance) {
         this.balance = balance;
     }
-    public String getAccountID(){
+
+    public String getAccountID() {
         return this.accountID;
     }
-    public String getAccountType(){
+
+    public String getAccountType() {
         return this.accountType;
     }
 
-    public void setTransferLimit(double amount){
+    public void setTransferLimit(double amount) {
         this.transferLimit = amount;
     }
-    public double getTransferLimit()
-    {
+
+    public double getTransferLimit() {
         return this.transferLimit;
     }
 
-    public static double getDefaultTransferLimit(){
+    public static double getDefaultTransferLimit() {
         return TRANSFER_LIMIT;
     }
 
-    public void setWithdrawLimit(double amount){
-        this.withdrawalLimit= amount;
+    public void setWithdrawLimit(double amount) {
+        this.withdrawalLimit = amount;
     }
-    public double getWithdrawLimit()
-    {
+
+    public double getWithdrawLimit() {
         return this.withdrawalLimit;
     }
 
-    public static double getDefaultWithdrawLimit(){
+    public static double getDefaultWithdrawLimit() {
         return WITHDRAWAL_LIMIT;
     }
 
-    public void setAccountType(String type){
+    public void setAccountType(String type) {
         this.accountType = type;
     }
+
     public void setLocalWithdrawLimit(double localWithdrawLimit) {
     }
+
     public void setOverseasWithdrawLimit(double overseasWithdrawLimit) {
     }
-    
+
     // Generate a random account ID
     public static String generateRandomDefaultAccountID() {
         String id;
@@ -103,6 +107,123 @@ public class Account {
         return id;
     }
 
+    // Read currency balances from CSV file
+    private Map<String, Double> readCurrencyBalancesFromCsv(String accountID) {
+        final String CURRENCY_CSV_FILE = "currency_balances.csv";
+        Map<String, Double> currencyBalances = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(CURRENCY_CSV_FILE))) {
+            String headerLine = br.readLine(); // Read the header line
+            String[] currencies = headerLine.split(",");
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts[0].equals(accountID)) {
+                    for (int i = 1; i < parts.length; i++) {
+                        currencyBalances.put(currencies[i], Double.parseDouble(parts[i]));
+                    }
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error reading currency balances from CSV file: " + e.getMessage());
+        }
+        return currencyBalances;
+    }
+
+    public static void updateCurrencyCsv(String accountID, String targetCurrency, double targetCurrencyBalance) {
+        final String CURRENCY_CSV_FILE = "currency_balances.csv";
+
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader buffer = new BufferedReader(new FileReader(CURRENCY_CSV_FILE))) {
+            // Read the header line to get currency names
+            String headerLine = buffer.readLine();
+            String[] currencies = headerLine.split(",");
+
+            // Find index of each currency in the header dynamically
+            int targetCurrencyIndex = -1;
+            for (int i = 0; i < currencies.length; i++) {
+                if (currencies[i].equals(targetCurrency)) {
+                    targetCurrencyIndex = i;
+                    break;
+                }
+            }
+
+            // Add header line to records
+            records.add(Arrays.asList(currencies));
+
+            String line;
+            while ((line = buffer.readLine()) != null) {
+                List<String> values = Arrays.asList(line.split(","));
+                if (values.get(0).equals(accountID)) {
+                    values.set(targetCurrencyIndex, Double.toString(targetCurrencyBalance));
+                    records.add(values);
+                } else {
+                    records.add(values);
+                }
+            }
+        } catch (IOException e) {
+            ExceptionHandling.handleIOException(e);
+            System.out.println("Failed to update account.");
+        }
+
+        try (FileWriter writer = new FileWriter(CURRENCY_CSV_FILE)) {
+            BufferedWriter buffer = new BufferedWriter(writer);
+            PrintWriter printWriter = new PrintWriter(buffer);
+            for (List<String> record : records) {
+                printWriter.println(String.join(",", record));
+            }
+            printWriter.flush();
+        } catch (IOException e) {
+            ExceptionHandling.handleIOException(e);
+            System.out.println("Failed to update account.");
+        }
+    }
+
+    public double convertCurrency(ForeignExchange foreignExchange, String sourceCurrency, String targetCurrency,
+            double amount) {
+        try {
+            // Read currency balances from CSV
+            Map<String, Double> currencyBalances = readCurrencyBalancesFromCsv(accountID);
+
+            // Check if the account has enough balance for the conversion
+            if (currencyBalances.containsKey(sourceCurrency) && currencyBalances.get(sourceCurrency) >= amount) {
+                double convertedAmount = foreignExchange.convert(sourceCurrency, targetCurrency, amount);
+                if (convertedAmount > 0) {
+                    // Update balance with the converted amount
+                    this.balance -= amount;
+                    double sourceBalance = currencyBalances.getOrDefault(sourceCurrency, 0.0);
+                    double targetBalance = currencyBalances.getOrDefault(targetCurrency, 0.0);
+
+                    sourceBalance -= amount;
+                    targetBalance += convertedAmount;
+
+                    currencyBalances.put(sourceCurrency, sourceBalance);
+                    currencyBalances.put(targetCurrency, targetBalance);
+
+                    // Update the CSV file with the new balances
+                    updateAccountInCsv(accountID, balance);
+
+                    // Update the CSV file storing currency balances
+                    updateCurrencyCsv(accountID, targetCurrency, currencyBalances.get(targetCurrency));
+                    updateCurrencyCsv(accountID, sourceCurrency, currencyBalances.get(sourceCurrency));
+
+                    // Log the currency conversion transaction
+                    recordTransaction("Currency Conversion", amount, targetCurrency);
+                    return convertedAmount;
+                } else {
+                    System.out.println("Currency conversion failed.");
+                    return 0.0;
+                }
+            } else {
+                System.out.println("Insufficient balance for currency conversion in " + sourceCurrency + ".");
+                return 0.0;
+            }
+        } catch (Exception e) {
+            System.out.println("Error occurred during currency conversion: " + e.getMessage());
+            return 0.0;
+        }
+    }
 
     // Generate a random account ID depending on the account type
     public static String generateRandomNewAccountID(String accountType) {
@@ -116,14 +237,12 @@ public class Account {
                 break;
         }
 
-
         Random random = new Random();
         String newAccountID;
         do {
             int fiveDigitNumber = 10000 + random.nextInt(90000);
             newAccountID = prefix + fiveDigitNumber;
         } while (Bank.idExistsInCsv(newAccountID, CUSTOMERS_CSV_FILE));
-
 
         return newAccountID;
     }
@@ -133,7 +252,6 @@ public class Account {
         System.out.println("Select the type of account to create:");
         System.out.println("1. Savings");
         System.out.println("2. Investment");
-
 
         int accountTypeIndex;
         while (true) {
@@ -147,9 +265,7 @@ public class Account {
             }
         }
 
-
         String accountType = accountTypeIndex == 1 ? "Savings" : "Investment";
-
 
         if (customer.hasAccountType(accountType)) {
             System.out.println("You already have a " + accountType + " account.");
@@ -160,10 +276,8 @@ public class Account {
             System.out.println("Created a new " + accountType + " account with ID " + accountID);
             newAccount.updateCsvWithNewAccount(customer.getCustomerID(), accountType, accountID, 0);
 
-
         }
     }
-
 
     // Create a new loan for the account
     public void createLoan(String csvFile) {
@@ -171,7 +285,6 @@ public class Account {
         int loanID = randomNo.nextInt(100000);
         Loan loanInstance = new Loan();
         Loan newLoan = loanInstance.newLoan(loanID);
-
 
         if (newLoan == null) {
             System.out.println("Loan application cancelled.");
@@ -197,11 +310,14 @@ public class Account {
     }
 
     public void deposit(double amount) {
-        this.balance += amount;
-        System.out.println("Deposited $" + amount + " into account " + this.accountID);
+        this.balance += amount; // Update the local balance
 
-        updateAccountInCsv(this.accountID, this.balance);
+        // Update the customer's balance in 'customer.csv'
+        updateAccountInCsv(this.accountID, balance);
+        updateCurrencyCsv(this.accountID, "SGD", balance);
 
+        // Log the deposit transaction; since it's a deposit, recipientAccountID is
+        // empty
         recordTransaction("Deposit", amount, "");
     }
 
@@ -212,18 +328,16 @@ public class Account {
             return;
         }
 
-
         System.out.print("Enter deposit amount: ");
         double depositAmount = scanner.nextDouble();
-        scanner.nextLine(); 
-
+        scanner.nextLine();
 
         depositAccount.deposit(depositAmount);
         depositAccount.updateAccountInCsv(depositAccount.getAccountID(), depositAccount.getBalance());
     }
 
-
     public void withdraw(double amount) {
+        // Reset the withdrawal limit if a new day has arrived
         if (lastResetTime.toLocalDate().isBefore(LocalDate.now())) {
             lastResetTime = LocalDateTime.now();
         }
@@ -234,12 +348,13 @@ public class Account {
         }
 
         if (amount <= balance) {
-            balance -= amount;
-            withdrawalLimit -= amount; 
+            balance -= amount; // Deduct the amount from the account balance
+            withdrawalLimit -= amount; // Update the remaining daily withdrawal limit
             System.out.printf("Successfully withdrawn $%.2f. Remaining daily limit: $%.2f\n", amount, withdrawalLimit);
 
-            updateAccountInCsv(accountID, balance);
-            recordTransaction("Withdrawal", -amount, "");
+            updateAccountInCsv(accountID, balance); // Update the new balance in 'customer.csv'
+            updateCurrencyCsv(accountID, "SGD", balance);
+            recordTransaction("Withdrawal", -amount, ""); // Log the withdrawal
         } else {
             System.out.println("Insufficient funds.");
         }
@@ -252,14 +367,15 @@ public class Account {
             return;
         }
 
-
         System.out.print("Enter withdrawal amount: ");
         double withdrawalAmount = scanner.nextDouble();
-        scanner.nextLine();
-
+        scanner.nextLine(); // Consume the newline character
 
         withdrawAccount.withdraw(withdrawalAmount);
         withdrawAccount.updateAccountInCsv(withdrawAccount.getAccountID(), withdrawAccount.getBalance());
+        updateCurrencyCsv(withdrawAccount.accountID, "SGD", withdrawAccount.getBalance());
+        // writeAccountsToCSV(withdrawAccount.getAccountID(),
+        // withdrawAccount.getBalance());
     }
 
     // Update the withdrawal limit and balance after a withdrawal
@@ -268,7 +384,7 @@ public class Account {
         boolean updated = false;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMERS_CSV_FILE));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -280,7 +396,7 @@ public class Account {
                     LocalDateTime now = LocalDateTime.now();
 
                     if (lastResetTime.toLocalDate().isBefore(LocalDate.now())) {
-                        lastWithdrawalLimit = 3000.0; 
+                        lastWithdrawalLimit = 3000.0;
                     }
 
                     if (currentBalance >= amountToWithdraw && amountToWithdraw <= lastWithdrawalLimit) {
@@ -333,13 +449,16 @@ public class Account {
         this.balance -= amount;
         recipientAccount.setBalance(recipientAccount.getBalance() + amount);
         updateAccountInCsv(recipientAccountID, recipientAccount.balance);
+        updateCurrencyCsv(recipientAccountID, "SGD", recipientAccount.balance);
         System.out.println(recipientAccountID + recipientAccount.balance);
         updateAccountInCsv(this.accountID, this.balance);
+        updateCurrencyCsv(this.accountID, "SGD", this.balance);
 
         this.recordTransaction("Transfer Out", -amount, recipientAccountID);
         recipientAccount.recordTransaction("Transfer In", amount, this.accountID);
 
-        System.out.println("Transfer successful: $" + amount + " from " + this.accountID + " to " + recipientAccount.getAccountID());
+        System.out.println("Transfer successful: $" + amount + " from " + this.accountID + " to "
+                + recipientAccount.getAccountID());
     }
 
     // Overloading transfer method
@@ -360,7 +479,6 @@ public class Account {
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter pw = new PrintWriter(bw);
             Scanner scanner = new Scanner(new File(CSV_FILE));
-
 
             while (scanner.hasNext()) {
                 String line = scanner.nextLine();
@@ -389,7 +507,7 @@ public class Account {
             System.err.println("Error updating account in CSV file: " + e.getMessage());
         }
     }
-    
+
     private void recordTransaction(String transactionType, double amount, String recipientAccountID) {
         String senderAccountID = this.accountID;
         String date = LocalDate.now().toString();
@@ -404,7 +522,8 @@ public class Account {
     }
 
     // Log a transaction to the transactions CSV file
-    private void logTransaction(String transactionType, String senderAccountID, String recipientAccountID, double amount, String date) {
+    private void logTransaction(String transactionType, String senderAccountID, String recipientAccountID,
+            double amount, String date) {
         File transactionsFile = new File(TRANSACTIONS_CSV_FILE);
         boolean fileExistsAndNotEmpty = transactionsFile.exists() && transactionsFile.length() > 0;
 
@@ -415,7 +534,8 @@ public class Account {
             }
 
             String transactionID = generateRandomTransactionID();
-            String transactionData = String.format("%s,%s,%s,%s,%.2f,%s\n", transactionID, transactionType, senderAccountID, recipientAccountID, amount, date);
+            String transactionData = String.format("%s,%s,%s,%s,%.2f,%s\n", transactionID, transactionType,
+                    senderAccountID, recipientAccountID, amount, date);
 
             bw.write(transactionData);
         } catch (IOException e) {
@@ -423,11 +543,10 @@ public class Account {
         }
     }
 
-
     // Generate a random transaction ID
     private String generateRandomTransactionID() {
         Random rand = new Random();
-        int transactionNumber = 100000 + rand.nextInt(900000); 
+        int transactionNumber = 100000 + rand.nextInt(900000);
         String prefix = "TRX";
         return prefix + transactionNumber;
     }
@@ -444,11 +563,9 @@ public class Account {
             PrintWriter pw = new PrintWriter(bw);
             Scanner fileScanner = new Scanner(new File("customers.csv"));
 
-
             while (fileScanner.hasNext()) {
                 String line = fileScanner.nextLine();
                 List<String> data = new ArrayList<>(Arrays.asList(line.split(",", -1)));
-
 
                 if (data.get(0).equals(customerID)) {
                     while (data.size() <= 23) {
@@ -464,7 +581,6 @@ public class Account {
                 }
                 pw.println(line);
             }
-
 
             fileScanner.close();
             pw.flush();
@@ -503,7 +619,6 @@ public class Account {
         }
     }
 
-
     // Display the account(s) information a customer has
     public void displayAccountInfo() {
         System.out.println("~~~~~~~~~~~~~ This is your Account Info ~~~~~~~~~~~~~");
@@ -522,9 +637,7 @@ public class Account {
             return;
         }
 
-
         System.out.println("Number of loans: " + loanList.size());
-
 
         for (Loan loan : loanList) {
             loan.getLoanInfo();
