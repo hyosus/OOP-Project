@@ -20,15 +20,10 @@ public class Bank {
     final static String CUSTOMERS_CSV_FILE = "customers.csv";
     final static String LOAN_FILE = "Loans.csv";
     final static String CREDIT_CARD_FILE = "CreditCard.csv";
-    private static final List<Customer> allCustomers = loadAllCustomers();
 
     public Bank(String name) {
         this.name = name;
         loadAllCustomers();
-    }
-
-    public String getName() {
-        return name;
     }
     
     // Method to load all customers and their accounts from the CSV file
