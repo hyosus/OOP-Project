@@ -105,6 +105,10 @@ public class Customer {
         this.accounts.add(account);
     }
 
+    public void addAccount(CreditCardAccount account) {
+        this.creditCardAccounts.add(account);
+    }
+
     public void displayAllAccountInfo() {
         for (Account account : accounts) {
             account.displayAccountInfo();
